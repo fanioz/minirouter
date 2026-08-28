@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spacing — MiniRouter</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+ body{padding:24px;max-width:980px;margin:0 auto}
+ h1{font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
+ .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow-card);margin-bottom:14px}
+ .label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta);margin-bottom:10px}
+ .scale{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+ .scale div{display:flex;flex-direction:column;align-items:center;gap:6px}
+ .scale i{display:block;background:var(--accent);border-radius:4px}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+ @media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>Spacing — Tokens & Rhythm</h1>
+<p class="sub">4-pt base, no 6/10 steps. Inter-card gap is the system's dominant rhythm: <code>14px</code> everywhere. Card padding is intentionally asymmetric (16 16 14).</p>
+
+<div class="card">
+  <div class="label">Scale — 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40</div>
+  <div class="scale mono" style="font-size:11px;color:var(--muted)">
+    <div><i style="width:28px;height:4px"></i>4</div>
+    <div><i style="width:28px;height:8px"></i>8</div>
+    <div><i style="width:28px;height:12px"></i>12</div>
+    <div><i style="width:28px;height:16px"></i>16</div>
+    <div><i style="width:28px;height:20px"></i>20</div>
+    <div><i style="width:28px;height:24px"></i>24</div>
+    <div><i style="width:28px;height:32px"></i>32</div>
+    <div><i style="width:28px;height:40px"></i>40</div>
+  </div>
+  <div class="mono" style="margin-top:10px;font-size:11.5px;color:var(--muted)">CSS: --space-1 4 · --space-2 8 · --space-3 12 · --space-4 16 ... — see <code>colors_and_type.css</code></div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="label">Card padding — verbatim</div>
+    <div style="background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:12px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 16px 14px">
+        <div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)">KPI label</div>
+        <div style="font-size:26px;font-weight:700;letter-spacing:-.03em">18,429</div>
+        <div style="font-size:12px;color:var(--muted)">vs previous 24h • 1,241 today</div>
+      </div>
+      <div class="mono" style="margin-top:8px;font-size:11px;color:var(--meta)">KPI: 16 16 14 · cost 12 14 14 · health 10 11 · header 13 16</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="label">Gutters & container</div>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="display:flex;gap:14px">
+        <div style="flex:1;height:46px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:grid;place-items:center;font-size:11px;color:var(--muted)" class="mono">1.62fr</div>
+        <div style="flex:.56;height:46px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:grid;place-items:center;font-size:11px;color:var(--muted)" class="mono">.92fr</div>
+      </div>
+      <div class="mono" style="margin-top:8px;font-size:11px;color:var(--meta)">--container-max 1360 · sidebar 268 · topbar 64 · gaps 14</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">Responsive reflow (not squeeze)</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <span style="padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:650">1120px: KPI 4→2, grids stack 1fr</span>
+    <span style="padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:650">860px: sidebar → horizontal pill strip</span>
+    <span style="padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:650">640px: search hides, title stacks</span>
+  </div>
+  <div class="mono" style="margin-top:8px;font-size:11.5px;color:var(--muted)">Table wrapper is <code>overflow:auto</code> with <code>-webkit-overflow-scrolling:touch</code>; long ids clip with <code>ellipsis</code>, never <code>nowrap</code>.</div>
+</div>
+</body>
+</html>

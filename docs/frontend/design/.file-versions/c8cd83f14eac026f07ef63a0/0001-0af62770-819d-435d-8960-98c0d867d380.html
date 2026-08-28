@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brand — Assets — MiniRouter</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+ body{padding:24px;max-width:980px;margin:0 auto}
+ h1{font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
+ .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-card);padding:16px;margin-bottom:14px}
+ .label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta);margin-bottom:10px}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+ .asset{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;display:grid;place-items:center;min-height:140px}
+ @media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>Brand — Assets</h1>
+<p class="sub">Source has no external logo file — the mark is <code>◈</code> in a 32px ink square + "MiniRouter / Native AOT • Edge Router". Preserved assets are derived verbatim from those primitives.</p>
+
+<div class="grid">
+  <div class="card">
+    <div class="label">Wordmark — assets/wordmark.svg</div>
+    <div class="asset"><img src="../assets/wordmark.svg" alt="MiniRouter wordmark" style="width:220px;height:auto"></div>
+    <div class="mono" style="font-size:11.5px;color:var(--muted);margin-top:10px">Rect 220×48, ink #111, 32px mark (9px radius) + 15/700 word + 9/600 sub. Used in sidebar 64h and drawer header.</div>
+  </div>
+  <div class="card">
+    <div class="label">Favicon — assets/favicon.svg</div>
+    <div class="asset" style="gap:12px"><img src="../assets/favicon.svg" alt="Favicon" style="width:64px;height:64px"><span class="mono" style="font-size:11px;color:var(--muted)">32×32, 9px radius, ◈ 15/800. Dark-remapped favicon uses ink-on-paper inversion.</span></div>
+    <div class="mono" style="font-size:11.5px;color:var(--muted);margin-top:10px">No rasterized favicon in source — SVG is the canonical mark.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">Provider dots — assets/provider-dots.svg</div>
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <img src="../assets/provider-dots.svg" alt="Provider dots" style="height:80px;border-radius:12px;border:1px solid var(--border)">
+    <div style="flex:1;min-width:220px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:650;display:inline-flex;gap:6px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:#E56A4A;display:inline-block"></span> openai-primary</span>
+        <span style="padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:650;display:inline-flex;gap:6px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:#111111;display:inline-block"></span> anthropic</span>
+        <span style="padding:6px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:650;display:inline-flex;gap:6px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:#6B7280;display:inline-block"></span> groq</span>
+      </div>
+      <div class="mono" style="font-size:11.5px;color:var(--muted);margin-top:8px">Used as inline <code>&lt;em style="background:providerColor"&gt;</code> in table + health dot + bar-fill. Keep exact hex — they are the only provider-level color.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">Source preservation</div>
+  <div class="mono" style="font-size:12px;color:var(--muted)">Preserved: <a href="../minirouter-analytics-v2.html">minirouter-analytics-v2.html</a> (64 KB) — single HTML prototype at project root.</div>
+  <div class="mono" style="font-size:12px;color:var(--muted)">No font binaries to preserve (Inter via system stack). No build/tray icons in source — <code>build/</code> intentionally empty.</div>
+</div>
+</body>
+</html>

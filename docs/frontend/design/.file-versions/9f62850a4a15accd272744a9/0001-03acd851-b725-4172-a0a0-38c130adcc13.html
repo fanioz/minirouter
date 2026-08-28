@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Surfaces — Dashboard — MiniRouter</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+ body{margin:0;background:var(--bg);color:var(--fg)}
+ .shell{display:flex;min-height:60vh}
+ .side{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+ .side-head{height:48px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid var(--border)}
+ .mark{width:28px;height:28px;border-radius:8px;background:var(--fg);color:white;display:grid;place-items:center;font-weight:800;font-size:12px}
+ .nav{padding:10px}
+ .nav-item{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:13px;font-weight:500;text-align:left}
+ .nav-item.active{background:var(--fg);color:white;border-color:var(--fg)}
+ .main{flex:1;min-width:0;padding:16px}
+ .topbar{height:42px;background:rgba(253,250,246,.88);border:1px solid var(--border);border-radius:999px;display:flex;align-items:center;gap:8px;padding:0 10px;margin-bottom:12px}
+ .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-card);padding:12px}
+ .btn{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:650}
+ .btn-p{background:var(--accent);border-color:var(--accent);color:white}
+ .banner{padding:10px 12px;border:1px solid #FFD9C2;background:var(--surface-warm);border-radius:12px;display:flex;gap:10px;align-items:center;margin-bottom:12px}
+ .kpi-val{font-size:20px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+ @media(max-width:760px){.grid{grid-template-columns:1fr 1fr} .side{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="side-head"><span class="mark">◈</span><span style="font-weight:700;letter-spacing:-.02em;font-size:13px">MiniRouter</span><span style="width:8px;height:8px;border-radius:50%;background:var(--success);margin-left:auto;box-shadow:0 0 0 4px rgba(16,164,100,.14)"></span></div>
+    <nav class="nav"><div style="font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--meta);font-weight:700;padding:0 6px;margin-bottom:6px">Observe</div>
+      <div class="nav-item active">◆ Analytics <span style="margin-left:auto;font-size:10px;padding:2px 6px;border-radius:999px;background:var(--accent);color:white">v2</span></div>
+      <div class="nav-item">Logs</div><div class="nav-item">API Keys</div></nav>
+    <div style="margin-top:auto;padding:10px;border-top:1px solid var(--border)"><span style="font-size:11px;color:var(--muted)">All systems nominal • 3 providers</span></div>
+  </aside>
+  <div class="main">
+    <div class="topbar"><span style="font-size:12px;color:var(--muted)">MiniRouter / <b style="color:var(--fg)">Analytics</b></span><span style="font-size:11px;font-weight:600;color:#7C4A32;background:#FFF1E8;border:1px solid #FFD9C2;padding:4px 8px;border-radius:999px;margin-left:auto">Improved v2</span><button class="btn">Refresh</button><button class="btn btn-p">Export CSV</button></div>
+    <div class="banner"><span style="width:24px;height:24px;border-radius:999px;background:var(--fg);color:white;display:grid;place-items:center;font-size:11px">◆</span><span style="font-size:12px"><b>What changed vs legacy</b> <span style="color:var(--muted)">Same coral + warm palette, denser layout with KPIs, chart overlay, health strip.</span></span></div>
+    <div class="grid">
+      <div class="card"><div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)">Total requests</div><div class="kpi-val">18,429 <span style="font-size:10px;padding:2px 6px;border-radius:999px;background:var(--success-soft);color:var(--success);border:1px solid #A7F3D0">↑ 12.3%</span></div><div style="height:6px;background:#F3F4F6;border-radius:999px;margin-top:8px"><i style="display:block;height:100%;width:68%;background:var(--accent);border-radius:999px"></i></div></div>
+      <div class="card"><div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)">Success rate</div><div class="kpi-val">98.4%</div><div style="height:6px;background:#F3F4F6;border-radius:999px;margin-top:8px"><i style="display:block;height:100%;width:98%;background:var(--success);border-radius:999px"></i></div></div>
+      <div class="card"><div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)">Est. cost (30d)</div><div class="kpi-val mono">$42.18</div><div style="display:flex;gap:6px;margin-top:8px"><span style="font-size:11px;padding:3px 7px;border-radius:999px;background:var(--surface-warm);border:1px solid #FFD9C2">Measured $38.92</span><span style="font-size:11px;padding:3px 7px;border-radius:999px;background:#F3F4F6;border:1px solid var(--border);color:var(--muted)">Est $3.26</span></div></div>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1.6fr .9fr;gap:12px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">Traffic & latency</b><span style="font-size:11px;padding:3px 8px;border-radius:999px;background:var(--fg);color:white">Requests</span></div>
+        <svg viewBox="0 0 200 60" style="width:100%;height:60px;margin-top:10px"><path d="M0 30 L20 26 L40 34 L60 18 L80 22 L100 12 L120 16 L140 10 L160 14 L180 8 L200 12" fill="none" stroke="#E56A4A" stroke-width="2" stroke-linecap="round"/><path d="M0 40 L40 38 L80 32 L120 36 L160 30 L200 28" fill="none" stroke="#111" stroke-width="1.2" stroke-dasharray="4 4" opacity=".45"/></svg>
+        <div style="display:flex;gap:10px;font-size:11px;color:var(--muted);margin-top:6px;border-top:1px solid var(--border-soft);padding-top:8px"><span style="display:inline-flex;gap:6px;align-items:center"><i style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></i>Requests</span><span style="display:inline-flex;gap:6px;align-items:center"><i style="width:8px;height:8px;border-radius:50%;background:#111"></i>Latency p50</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:700">Cost by provider</div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span class="mono" style="font-size:11px;width:90px">openai-primary</span><span style="flex:1;height:8px;background:#F3F4F6;border-radius:999px;overflow:hidden"><i style="display:block;height:100%;width:59%;background:#E56A4A"></i></span><span class="mono" style="font-size:11px;font-weight:700">$24.82</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="mono" style="font-size:11px;width:90px">anthropic</span><span style="flex:1;height:8px;background:#F3F4F6;border-radius:999px;overflow:hidden"><i style="display:block;height:100%;width:27%;background:#111"></i></span><span class="mono" style="font-size:11px;font-weight:700">$11.40</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="mono" style="font-size:11px;width:90px">groq</span><span style="flex:1;height:8px;background:#F3F4F6;border-radius:999px;overflow:hidden"><i style="display:block;height:100%;width:14%;background:#6B7280"></i></span><span class="mono" style="font-size:11px;font-weight:700">$5.96</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted)" class="mono">This card renders on the real tokens — toggle dark via <code>html.dark</code> to proof the remap. Full kit at <a href="../ui_kits/app/index.html">ui_kits/app/index.html</a>.</div>
+  </div>
+</div>
+</body>
+</html>

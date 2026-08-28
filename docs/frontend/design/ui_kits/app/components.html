@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MiniRouter — Component Atlas</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+ body{padding:24px;max-width:980px;margin:0 auto;background:var(--bg);color:var(--fg)}
+ h1{font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
+ .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-card);margin-bottom:14px}
+ .ch{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+ .ch h3{margin:0;font-size:13.5px;letter-spacing:-.01em}
+ .body{padding:14px 16px}
+ .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+ .btn{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:650;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+ .btn-primary{background:var(--accent);border-color:var(--accent);color:white}
+ .tab{height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:650;color:var(--muted)}
+ .tab.active{background:var(--fg);color:white;border-color:var(--fg)}
+ .seg{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;display:inline-flex;align-items:center;padding:3px;gap:2px}
+ .seg button{height:28px;padding:0 12px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:13px;font-weight:650}
+ .seg button.active{background:var(--fg);color:white;border-color:var(--fg)}
+ .input{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:0 11px;font-size:13px;width:220px}
+ .badge{font-size:11px;font-weight:750;letter-spacing:.02em;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;gap:6px}
+ .progress{height:6px;background:#F3F4F6;border-radius:999px;overflow:hidden}
+ .copy{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+ .label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)}
+ code.mono{font-family:var(--font-mono);font-size:11.5px}
+</style>
+</head>
+<body>
+<h1>Component Atlas — MiniRouter</h1>
+<p class="sub">Isolated inventory on the live tokens (<code>../../colors_and_type.css</code>). Copy any row's markup — classes are canonical: <code>.btn</code>, <code>.card</code>, <code>.badge</code>, <code>.input</code>… Full surface: <a href="index.html">index.html</a>.</p>
+
+<div class="card"><div class="ch"><h3>Buttons — canonical</h3><span class="label">.btn · .btn-primary · .tab · .seg</span></div>
+  <div class="body row"><button class="btn">Ghost</button><button class="btn btn-primary">Primary (coral)</button><button class="btn" disabled>Disabled .5</button><span class="badge" style="background:var(--fg);color:white">ink active pattern</span></div>
+  <div class="body row" style="padding-top:0"><button class="tab active">Requests</button><button class="tab">Tokens</button><div class="seg"><button class="active">24H</button><button>7D</button><button>30D</button></div></div>
+</div>
+
+<div class="card"><div class="ch"><h3>Badges & Pills</h3><span class="label">11 / 750 · 999px</span></div>
+  <div class="body row">
+    <span class="badge" style="background:var(--success);color:white;border-color:var(--success)">● Live — badge-live</span>
+    <span class="badge" style="background:var(--success-soft);color:var(--success);border-color:#A7F3D0">99.1% — success-soft</span>
+    <span class="badge" style="background:var(--danger);color:white;border-color:var(--danger)">Open — danger</span>
+    <span class="badge" style="background:var(--danger-soft);color:var(--danger);border-color:#FECACA">Failed — danger-soft</span>
+    <span class="badge" style="background:var(--surface-warm);border-color:#FFD9C2;color:#7C4A32">Measured $38.92 — soft warm</span>
+    <span class="badge" style="background:#F3F4F6;color:var(--muted)">Muted pill</span>
+  </div>
+</div>
+
+<div class="card"><div class="ch"><h3>Forms</h3><span class="label">36h · focus accent-ring</span></div>
+  <div class="body row"><input class="input" placeholder="Search provider, model, key…"><input class="input" placeholder="Filter provider…" style="width:160px;border-radius:999px"><span class="label" style="display:inline-flex;align-items:center;gap:8px">Switch <input type="checkbox" class="switch" checked style="appearance:none;width:36px;height:22px;border-radius:999px;background:var(--accent);position:relative"></span><button class="copy">⎘</button></div>
+  <div class="body mono" style="padding-top:0;font-size:11.5px;color:var(--muted)">Search is pill (999px); plain <code>.input</code> is 10px — the only non-pill input. Switch toggles <code>#E5E7EB → var(--accent)</code>.</div>
+</div>
+
+<div class="card"><div class="ch"><h3>Cards — KPI / Cost / Health</h3></div>
+  <div class="body" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 16px 14px"><div class="label">Total requests</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums">18,429 <span style="font-size:11px;padding:3px 7px;border-radius:999px;background:var(--success-soft);color:var(--success);border:1px solid #A7F3D0">↑ 12.3%</span></div><div class="progress" style="margin-top:10px"><i style="display:block;height:100%;width:68%;background:var(--accent);border-radius:999px"></i></div></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px">
+      <div style="display:flex;align-items:center;gap:12px" class="mono"><span style="width:90px;font-size:12px;font-weight:650">openai-primary</span><span style="flex:1;height:8px;background:#F3F4F6;border-radius:999px;overflow:hidden"><i style="display:block;height:100%;width:59%;background:#E56A4A"></i></span><span style="font-size:11px;font-weight:700">$24.82</span></div>
+      <div style="margin-top:8px;display:flex;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:var(--success)"></span><span style="font-size:12px;font-weight:700">anthropic — healthy</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card"><div class="ch"><h3>Chart primitive</h3><span class="label">720×200 · areaGrad .24→0</span></div>
+  <div class="body"><svg viewBox="0 0 640 120" width="100%" height="90" style="display:block"><defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E56A4A" stop-opacity=".24"/><stop offset="100%" stop-color="#E56A4A" stop-opacity="0"/></linearGradient></defs><path d="M0 60 L64 50 L128 58 L192 30 L256 36 L320 18 L384 24 L448 12 L512 16 L640 20" fill="none" stroke="#E56A4A" stroke-width="2.2" stroke-linecap="round"/><path d="M0 60 L64 50 L128 58 L192 30 L256 36 L320 18 L384 24 L448 12 L512 16 L640 20 L640 90 L0 90 Z" fill="url(#g2)"/></svg><div class="mono" style="font-size:11px;color:var(--muted);margin-top:8px">area = url(#areaGrad) + line coral 2.2 — never outline-only.</div></div>
+</div>
+
+<div style="font-size:12px;color:var(--muted)" class="mono">Tokens: <code>../../colors_and_type.css</code> · Dark: <code>html.dark</code> remap · No extra JS required to render these atoms.</div>
+</body>
+</html>

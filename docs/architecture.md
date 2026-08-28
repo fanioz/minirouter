@@ -32,7 +32,7 @@ MiniRouter is a self-contained reverse proxy for LLM APIs. A single Native AOT b
 | Persistence (state) | SQLite via `Microsoft.Data.Sqlite` 10.0.10 | `minirouter.db` — `api_keys`, `request_log` |
 | Cache | `IMemoryCache` | Aggregated `/models` response + per-preset model lists |
 | CLI | `Spectre.Console.Cli` 0.49.0 | Used for `restart` and `providers *` subcommands |
-| Frontend | Svelte 5 + Tailwind 4 + bits-ui | Built to `wwwroot/`, served by `UseStaticFiles()` |
+| Frontend | Svelte 5 + Tailwind 4 + bits-ui | Built to `wwwroot/`, served by `UseStaticFiles()`. Visual language governed by the [MiniRouter Neutral Modern design system](./frontend/design/README.md). |
 
 ### Critical AOT constraints
 

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MiniRouter — Analytics v2 (Applied Kit)</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+*{box-sizing:border-box}
+html{scrollbar-gutter:stable}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+button{font:inherit}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ── Shell ── */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden}
+.sidebar-head{height:var(--topbar-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:var(--fg);color:var(--accent-on);display:grid;place-items:center;font-weight:800;letter-spacing:-.04em;font-size:13px;flex-shrink:0}
+.brand-name{font-weight:700;letter-spacing:-.02em;font-size:15px;line-height:1}
+.brand-sub{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--meta);font-weight:600;margin-top:3px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 4px rgba(16,164,100,.14);animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(16,164,100,.14)}50%{box-shadow:0 0 0 7px rgba(16,164,100,0)}}
+@media(prefers-reduced-motion:reduce){.live-dot{animation:none}}
+.icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:transparent;display:grid;place-items:center;color:var(--muted);cursor:pointer;transition:all var(--motion-fast) var(--ease-standard)}
+.icon-btn:hover{background:var(--accent-soft);border-color:var(--border);color:var(--fg)}
+.nav{padding:12px 10px 8px;flex:1;overflow:auto}
+.nav-group{margin-bottom:16px}
+.nav-label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--meta);font-weight:700;padding:0 10px;margin:10px 0 8px}
+.nav-item{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;font-size:13.5px;font-weight:500;text-align:left;transition:all var(--motion-fast) var(--ease-standard)}
+.nav-item:hover{background:#F9F5F1;color:var(--fg)}
+.nav-item.active{background:var(--fg);color:var(--accent-on);border-color:var(--fg)}
+.nav-ico{width:18px;height:18px;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:999px;background:var(--accent);color:white}
+.nav-count{margin-left:auto;font-size:12px;color:var(--meta);font-weight:600;background:#F3F4F6;padding:2px 7px;border-radius:999px;font-variant-numeric:tabular-nums}
+.nav-item.active .nav-count{background:rgba(255,255,255,.18);color:rgba(255,255,255,.92)}
+.sidebar-foot{padding:12px 10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,transparent,rgba(253,250,246,.7))}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;background:var(--surface-warm);border:1px solid var(--border-soft);font-size:12px;line-height:1.3}
+.switch{appearance:none;width:36px;height:22px;border-radius:999px;background:#E5E7EB;position:relative;cursor:pointer;transition:background var(--motion-fast) var(--ease-standard);flex-shrink:0}
+.switch:checked{background:var(--accent)}
+.switch:before{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:white;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.16);transition:transform var(--motion-fast) var(--ease-standard)}
+.switch:checked:before{transform:translateX(14px)}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:var(--topbar-h);background:rgba(253,250,246,.88);backdrop-filter:saturate(1.5) blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;padding:0 20px 0 24px}
+.bc{color:var(--muted);white-space:nowrap;font-size:13px}
+.bc strong{color:var(--fg)}
+.vsep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.comparison{font-size:12px;font-weight:600;color:#7C4A32;background:#FFF1E8;border:1px solid #FFD9C2;padding:5px 10px;border-radius:999px;white-space:nowrap}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.search{position:relative}
+.search input{width:220px;height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:0 12px 0 34px;font-size:13px;outline:none}
+.search input:focus{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--meta);pointer-events:none}
+.select{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;display:inline-flex;align-items:center;padding:0 10px;gap:8px}
+.select label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.select select{border:0;background:transparent;font-weight:650;font-size:13px;outline:none;cursor:pointer;color:var(--fg)}
+.seg{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;display:inline-flex;align-items:center;padding:3px;gap:2px}
+.seg button{height:28px;padding:0 12px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:13px;font-weight:650;cursor:pointer}
+.seg button.active{background:var(--fg);color:white;border-color:var(--fg)}
+.btn{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:650;display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;transition:all var(--motion-fast) var(--ease-standard)}
+.btn:hover{border-color:#D1D5DB;background:#FCFCF9}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:white}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.content{padding:20px 24px 32px;max-width:var(--container-max);width:100%;margin:0 auto}
+.page-title{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:8px 0 16px}
+.page-title h1{margin:0;font-size:28px;letter-spacing:-.03em;line-height:1.05;font-weight:700}
+.page-title p{margin:7px 0 0;color:var(--muted);font-size:13.5px;max-width:62ch;line-height:1.5}
+.title-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-card)}
+.kpi{padding:16px 16px 14px;display:flex;flex-direction:column}
+.kpi-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)}
+.kpi-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid var(--border);background:var(--surface-warm);color:var(--fg)}
+.kpi-value{display:flex;align-items:baseline;gap:8px}
+.kpi-value strong{font-size:26px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.up{background:var(--success-soft);color:var(--success);border:1px solid #A7F3D0}
+.down{background:var(--danger-soft);color:var(--danger);border:1px solid #FECACA}
+.kpi-value small{font-size:11px;font-weight:800;padding:3px 7px;border-radius:999px}
+.grid2{display:grid;grid-template-columns:1.62fr .92fr;gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1.32fr .88fr;gap:14px;margin-bottom:14px}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);gap:12px}
+.panel-header h3{margin:0;font-size:13.5px;letter-spacing:-.01em;font-weight:700}
+.tab{height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:650;color:var(--muted);cursor:pointer}
+.tab.active{background:var(--fg);color:white;border-color:var(--fg)}
+.chart-wrap{padding:14px 16px 4px}
+.chart-meta{display:flex;gap:16px;padding:8px 16px 12px;color:var(--muted);font-size:12px;align-items:center;border-top:1px solid #F3F4F6;margin-top:4px}
+.legend{display:flex;gap:6px;align-items:center;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%}
+.cost-row{display:flex;align-items:center;gap:12px}
+.bar-track{flex:1;height:8px;background:#F3F4F6;border-radius:999px;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px}
+.health-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 14px 14px}
+.health-card{border:1px solid var(--border);border-radius:12px;padding:10px 11px;display:flex;gap:10px;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--meta);font-weight:750;text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;background:#FCFCF9}
+tbody td{padding:12px 12px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
+.badge{font-size:11px;font-weight:750;letter-spacing:.02em;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center}
+.badge-live{background:var(--success);color:white;border-color:var(--success)}
+.badge-muted{background:#F3F4F6;color:var(--muted);border-color:#E5E7EB}
+.badge-open{background:var(--danger);color:white;border-color:var(--danger)}
+.progress{height:6px;background:#F3F4F6;border-radius:999px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.copy{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.model-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F3F4F6}
+.rank{width:26px;height:26px;border-radius:50%;background:var(--fg);color:white;display:grid;place-items:center;font-size:12px;font-weight:800}
+.rank.alt{background:#F3F4F6;color:var(--fg);border:1px solid var(--border)}
+.log-item{display:grid;grid-template-columns:84px 1fr auto;gap:10px;padding:11px 14px;border-bottom:1px solid #F3F4F6}
+.compare-banner{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #FFD9C2;background:var(--surface-warm);border-radius:12px;margin-bottom:14px}
+.drawer{position:fixed;inset:0;display:none;z-index:40}
+.drawer.open{display:block}
+.drawer-bg{position:absolute;inset:0;background:rgba(17,17,17,.38);backdrop-filter:blur(2px)}
+.drawer-panel{position:absolute;right:0;top:0;height:100%;width:min(440px,92vw);background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-raised);overflow:auto}
+.input{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:0 11px;font-size:13px;width:100%;outline:none}
+.input:focus{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--fg);color:white;padding:11px 14px;border-radius:999px;font-size:13px;font-weight:650;box-shadow:var(--shadow-raised);z-index:50;opacity:0;transform:translateY(8px);transition:all 220ms cubic-bezier(0.2,0,0,1)}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:1120px){.kpis{grid-template-columns:repeat(2,1fr)} .grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:860px){.shell{flex-direction:column} .sidebar{width:100%;height:auto;position:relative;border-right:0;border-bottom:1px solid var(--border)} .topbar{height:auto;min-height:56px;flex-wrap:wrap;padding:10px 14px}}
+@media(max-width:640px){.content{padding:16px 14px} .search{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" aria-label="Primary">
+    <div class="sidebar-head">
+      <div class="brand"><div class="brand-mark">◈</div><div><div class="brand-name">MiniRouter</div><div class="brand-sub">Native AOT • Edge Router</div></div></div>
+      <span class="live-dot" title="Live"></span>
+    </div>
+    <nav class="nav">
+      <div class="nav-group"><div class="nav-label">Operate</div>
+        <button class="nav-item"><span>Home</span><span class="nav-count">3</span></button>
+        <button class="nav-item"><span>Providers</span></button>
+        <button class="nav-item"><span>Models</span><span class="nav-count">18</span></button>
+      </div>
+      <div class="nav-group"><div class="nav-label">Observe</div>
+        <button class="nav-item active"><span>Analytics</span><span class="nav-badge">v2</span></button>
+        <button class="nav-item"><span>Logs</span></button>
+      </div>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="pill"><span class="live-dot" style="width:8px;height:8px"></span><span><strong>All systems nominal</strong> • 3 providers</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <span style="font-size:12px;color:var(--muted);font-weight:650" id="themeLabel">Theme • Light</span>
+        <span style="display:flex;align-items:center;gap:8px">☀︎ <input type="checkbox" class="switch" id="themeSwitch" aria-label="Toggle dark theme"> ◐</span>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <span class="bc">MiniRouter / <strong>Analytics</strong></span>
+      <span class="vsep"></span>
+      <span class="comparison">Improved v2 — same routes, richer observability</span>
+      <div class="topbar-right">
+        <label class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20 16.2 16.2"/></svg><input placeholder="Search provider, model, key…"></label>
+        <div class="seg"><button class="active">24H</button><button>7D</button><button>30D</button></div>
+        <button class="btn" id="refreshBtn">Refresh</button>
+        <button class="btn btn-primary" id="exportBtn">Export CSV</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-title">
+        <div><h1>Router analytics</h1><p>Provider throughput, latency and estimated cost — refreshed every 30s. Costs are snapshot estimates, not invoiced amounts.</p></div>
+        <div class="title-actions"><span class="badge" style="display:inline-flex;gap:6px;align-items:center"><span class="live-dot"></span> Live tail</span><span class="badge badge-muted">Updated just now • :8080</span></div>
+      </div>
+
+      <div class="compare-banner">
+        <span style="width:28px;height:28px;border-radius:999px;background:var(--fg);color:white;display:grid;place-items:center;font-size:13px">◆</span>
+        <div style="flex:1"><b style="font-size:12.5px">What changed vs the existing dashboard</b><p style="margin:3px 0 0;font-size:12px;color:var(--muted);line-height:1.4">Same coral + warm-paper palette, denser layout: KPIs with trends, traffic & latency overlay, provider health strip, sortable performance table, model leaderboard.</p></div>
+        <button class="btn" onclick="toggleCompare(this)">Show legacy layout</button>
+      </div>
+
+      <section class="kpis">
+        <div class="card kpi"><div style="display:flex;justify-content:space-between;align-items:center"><span class="kpi-label">Total requests</span><span class="kpi-icon">◌</span></div><div class="kpi-value" style="margin-top:10px"><strong>18,429</strong><small class="up">↑ 12.3%</small></div><div style="font-size:12px;color:var(--muted);margin-top:6px">vs previous 24h • <b style="color:var(--fg)">1,241 today</b></div><svg viewBox="0 0 120 28" style="height:28px;margin-top:10px;display:block"><path d="M0 18 L12 16 L24 20 L36 12 L48 14 L60 8 L72 10 L84 6 L96 9 L110 5 L120 7" fill="none" stroke="#E56A4A" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="card kpi"><div style="display:flex;justify-content:space-between;align-items:center"><span class="kpi-label">Success rate</span><span class="kpi-icon" style="color:var(--success)">✓</span></div><div class="kpi-value" style="margin-top:10px"><strong>98.4%</strong><small class="down">↓ 0.2%</small></div><div style="font-size:12px;color:var(--muted);margin-top:6px">295 failures • <b style="color:var(--danger)">3 open retries</b></div><div class="progress" style="margin-top:10px"><i style="width:98.4%;background:var(--success)"></i></div></div>
+        <div class="card kpi"><div style="display:flex;justify-content:space-between;align-items:center"><span class="kpi-label">Avg latency</span><span class="kpi-icon">◷</span></div><div class="kpi-value" style="margin-top:10px"><strong>187<small style="font-size:14px;color:var(--muted)">ms</small></strong><small class="up">↓ 14ms</small></div><div style="font-size:12px;color:var(--muted);margin-top:6px">p95 <b>412ms</b> • p50 <b>132ms</b></div><div style="display:flex;gap:3px;height:28px;align-items:end;margin-top:10px"><i style="display:block;width:6px;border-radius:6px;height:18px;background:#E5E7EB"></i><i style="display:block;width:6px;border-radius:6px;height:26px;background:#E5E7EB"></i><i style="display:block;width:6px;border-radius:6px;height:22px;background:#E5E7EB"></i><i style="display:block;width:6px;border-radius:6px;height:34px;background:var(--accent)"></i><i style="display:block;width:6px;border-radius:6px;height:30px;background:#E5E7EB"></i><i style="display:block;width:6px;border-radius:6px;height:40px;background:var(--accent)"></i></div></div>
+        <div class="card kpi"><div style="display:flex;justify-content:space-between;align-items:center"><span class="kpi-label">Est. cost (30d)</span><span class="kpi-icon">$</span></div><div class="kpi-value" style="margin-top:10px"><strong class="mono">$42.18</strong><small class="up">+$3.10 today</small></div><div style="font-size:12px;color:var(--muted);margin-top:6px">Tokens <b>2.41M in / 1.08M out</b></div><div style="margin-top:8px;display:flex;gap:6px"><span class="badge" style="background:var(--surface-warm);border-color:#FFD9C2;color:#7C4A32">Measured $38.92</span><span class="badge badge-muted">Estimated $3.26</span></div></div>
+      </section>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="panel-header"><h3>Traffic & latency</h3><div style="display:flex;gap:6px"><button class="tab active">Requests</button><button class="tab">Tokens</button></div></div>
+          <div class="chart-wrap">
+            <svg id="miniChart" viewBox="0 0 640 160" width="100%" height="160"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E56A4A" stop-opacity=".24"/><stop offset="100%" stop-color="#E56A4A" stop-opacity="0"/></linearGradient></defs>
+              <line x1="32" x2="624" y1="12" y2="12" stroke="#F0EDE9"/><line x1="32" x2="624" y1="48" y2="48" stroke="#F0EDE9"/><line x1="32" x2="624" y1="84" y2="84" stroke="#F0EDE9"/><line x1="32" x2="624" y1="120" y2="120" stroke="#F0EDE9"/>
+              <path d="M32 80 L80 68 L128 74 L176 42 L224 48 L272 30 L320 36 L368 22 L416 28 L464 16 L512 20 L560 14 L600 18" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M32 80 L624 80 L624 120 L32 120 Z" fill="url(#ag)" opacity=".9"/>
+              <g fill="white" stroke="#E56A4A" stroke-width="1.6"><circle cx="176" cy="42" r="3.5"/><circle cx="320" cy="36" r="3.5"/><circle cx="464" cy="16" r="3.5"/></g>
+            </svg>
+          </div>
+          <div class="chart-meta"><span class="legend"><i class="dot" style="background:var(--accent)"></i> Requests 1,241</span><span class="legend"><i class="dot" style="background:#111"></i> Latency p50 132ms</span><span style="margin-left:auto">Filled area = volume • dashed = p50</span></div>
+        </div>
+        <div class="card">
+          <div class="panel-header"><h3>Cost by provider</h3><button class="btn" style="height:28px;padding:0 10px;font-size:12px">Share • $</button></div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:12px">
+            <div class="cost-row"><span class="mono" style="width:110px;font-size:12px;font-weight:650">openai-primary</span><span class="bar-track"><span class="bar-fill" style="width:59%;background:#E56A4A"></span></span><span class="mono" style="width:84px;text-align:right;font-weight:700">$24.82</span></div>
+            <div class="cost-row"><span class="mono" style="width:110px;font-size:12px;font-weight:650">anthropic</span><span class="bar-track"><span class="bar-fill" style="width:27%;background:#111"></span></span><span class="mono" style="width:84px;text-align:right;font-weight:700">$11.40</span></div>
+            <div class="cost-row"><span class="mono" style="width:110px;font-size:12px;font-weight:650">groq</span><span class="bar-track"><span class="bar-fill" style="width:14%;background:#6B7280"></span></span><span class="mono" style="width:84px;text-align:right;font-weight:700">$5.96</span></div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:0 14px"></div>
+          <div class="panel-header" style="border:0;padding-bottom:8px"><h3>Provider health</h3><span class="badge badge-muted">circuit • enabled</span></div>
+          <div class="health-grid">
+            <div class="health-card"><span style="width:10px;height:10px;border-radius:50%;background:var(--success)"></span><span style="font-size:13px;font-weight:700">openai-primary</span></div>
+            <div class="health-card"><span style="width:10px;height:10px;border-radius:50%;background:var(--success)"></span><span style="font-size:13px;font-weight:700">anthropic</span></div>
+            <div class="health-card"><span style="width:10px;height:10px;border-radius:50%;background:var(--danger)"></span><span style="font-size:13px;font-weight:700">groq</span></div>
+            <div class="health-card" style="border-style:dashed"><span style="font-size:12px;color:var(--muted)">+ Add provider</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" style="margin-bottom:14px">
+        <div class="panel-header"><h3>Provider performance</h3><div style="display:flex;gap:6px"><input class="input" placeholder="Filter provider…" style="width:160px;height:32px;border-radius:999px"><select class="select" style="height:32px"><option>Sort: Requests</option></select></div></div>
+        <div style="overflow:auto"><table>
+          <thead><tr><th>Provider</th><th>Base URL</th><th style="text-align:right">Requests</th><th style="text-align:right">Tokens in / out</th><th style="text-align:right">Latency p50/p95</th><th>Success</th><th>Circuit</th><th style="text-align:right">Est. cost</th></tr></thead>
+          <tbody>
+            <tr><td><span style="width:8px;height:8px;border-radius:50%;background:#E56A4A;display:inline-block"></span> openai-primary</td><td class="mono" style="font-size:12px;color:var(--fg)">api.openai.com/v1</td><td style="text-align:right">9,412</td><td style="text-align:right" class="mono" >1,420,300 / 621,400</td><td style="text-align:right;color:var(--success)">118 / 298 ms</td><td><span class="badge" style="background:#ECFDF5;color:var(--success)">99.1%</span></td><td><span class="badge badge-live">closed</span></td><td style="text-align:right" class="mono">$24.82</td></tr>
+            <tr><td><span style="width:8px;height:8px;border-radius:50%;background:#111111;display:inline-block"></span> anthropic</td><td class="mono" style="font-size:12px">api.anthropic.com</td><td style="text-align:right">5,231</td><td style="text-align:right" class="mono">623,400 / 289,100</td><td style="text-align:right;color:var(--warn)">142 / 412 ms</td><td><span class="badge" style="background:#FFFBEB;color:var(--warn)">98.2%</span></td><td><span class="badge badge-live">closed</span></td><td style="text-align:right" class="mono">$11.40</td></tr>
+            <tr><td><span style="width:8px;height:8px;border-radius:50%;background:#6B7280;display:inline-block"></span> groq</td><td class="mono" style="font-size:12px">api.groq.com/openai/v1</td><td style="text-align:right">3,786</td><td style="text-align:right" class="mono">368,900 / 172,300</td><td style="text-align:right;color:var(--danger)">89 / 510 ms</td><td><span class="badge" style="background:#FFFBEB;color:var(--warn)">96.4%</span></td><td><span class="badge badge-open">open</span></td><td style="text-align:right" class="mono">$5.96</td></tr>
+          </tbody>
+        </table></div>
+        <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);background:#FCFCF9;border-radius:0 0 12px 12px"><span style="font-size:12px;color:var(--muted)">Pricing is a point-in-time snapshot. Costs are estimates for comparison only.</span><span class="badge" style="background:var(--surface-warm);border-color:#FFD9C2;color:#7C4A32">Explicit routing: providerId/model • no retries</span></div>
+      </section>
+
+      <section class="grid3">
+        <div class="card"><div class="panel-header"><h3>Top models</h3><span class="badge badge-muted">by tokens</span></div>
+          <div style="padding:6px 14px">
+            <div class="model-row"><span class="rank">1</span><span class="mono" style="font-weight:650;font-size:13px">gpt-4o-mini</span><span class="mono" style="margin-left:auto;font-weight:700">412,300</span></div>
+            <div class="model-row"><span class="rank alt">2</span><span class="mono" style="font-weight:650;font-size:13px">claude-3-haiku</span><span class="mono" style="margin-left:auto;font-weight:700">298,100</span></div>
+            <div class="model-row"><span class="rank alt">3</span><span class="mono" style="font-weight:650;font-size:13px">gpt-4o</span><span class="mono" style="margin-left:auto;font-weight:700">184,200</span></div>
+          </div>
+        </div>
+        <div class="card"><div class="panel-header"><h3>Recent requests</h3><button class="btn" style="height:28px">View all →</button></div>
+          <div class="log-item"><span class="mono" style="font-size:11px;color:var(--meta)">14:42:11</span><span style="font-size:13px;font-weight:700">openai-primary <span class="mono" style="font-weight:400;color:var(--muted);font-size:11.5px">/ gpt-4o-mini</span></span><span class="badge" style="background:var(--success-soft);color:var(--success);border-color:#A7F3D0;font-size:10px">Success</span></div>
+          <div class="log-item"><span class="mono" style="font-size:11px;color:var(--meta)">14:41:44</span><span style="font-size:13px;font-weight:700">groq <span class="mono" style="font-weight:400;color:var(--muted);font-size:11.5px">/ llama-3.1-70b</span></span><span class="badge" style="background:var(--danger-soft);color:var(--danger);border-color:#FECACA;font-size:10px">Failed</span></div>
+        </div>
+      </section>
+
+      <div style="margin-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <span style="font-size:12px;color:var(--muted)">MiniRouter v2 prototype • Native AOT ~34 MB idle • <span class="mono">PORT=8080</span></span>
+        <a href="components.html" style="font-size:12px;font-weight:650">Open component atlas →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="drawer"><div class="drawer-bg" onclick="closeDrawer()"></div><div class="drawer-panel" style="padding:16px"><div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px"><h3 style="margin:0">Provider detail</h3><button class="icon-btn" onclick="closeDrawer()">✕</button></div><p style="font-size:13px;color:var(--muted)">Drawer panel — <code>.drawer 440px / 92vw</code> with <code>shadow-raised</code> and <code>blur(2px)</code>.</p><button class="btn btn-primary" style="margin-top:10px">Save changes</button></div></div>
+<div class="toast" id="toast">Export started • analytics_24h.csv</div>
+
+<script>
+function toggleCompare(btn){ const b=document.querySelector('.compare-banner'); const isL=btn.textContent.includes('legacy'); btn.textContent=isL?'Show improved v2':'Show legacy layout'; showToast(isL?'Switched to legacy card grid':'Back to improved v2'); }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2200); }
+document.getElementById('exportBtn').addEventListener('click',()=>showToast('Export started • analytics_24h.csv'));
+document.getElementById('refreshBtn').addEventListener('click',()=>{ const b=document.getElementById('refreshBtn'); b.textContent='Refreshing…'; setTimeout(()=>{ b.textContent='Refresh'; showToast('Refreshed • 30s auto-refresh') },380); });
+const ts=document.getElementById('themeSwitch');
+ts.addEventListener('change',e=>{ document.documentElement.classList.toggle('dark',e.target.checked); document.getElementById('themeLabel').textContent=e.target.checked?'Theme • Dark':'Theme • Light'; });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrawer(); });
+function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); }
+</script>
+</body>
+</html>
