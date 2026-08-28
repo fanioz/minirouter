@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "preview/surfaces-dashboard.html",
+  "entry": "preview/surfaces-dashboard.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-28T07:01:15.675Z",
+  "updatedAt": "2026-08-28T07:01:15.675Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

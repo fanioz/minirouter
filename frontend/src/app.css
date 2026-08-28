@@ -1,0 +1,309 @@
+@import "tailwindcss";
+
+/* ========================================
+   MiniRouter — Neutral Modern / Warm Paper Design System
+   Tokens verbatim from frontend/design/colors_and_type.css
+   Source: minirouter-analytics-v2.html
+   Keep colors_and_type.css as source of truth — do not
+   duplicate hex values elsewhere.
+   ======================================== */
+:root {
+  /* ── Background & surfaces ── */
+  --bg: #FDFAF6;                /* warm paper */
+  --surface: #ffffff;           /* card / shell */
+  --surface-warm: #FFF7F2;      /* pill / soft badge */
+  --surface-2: #FFF7F2;
+  --surface-head: #FCFCF9;      /* table head / hover steps */
+  /* ── Foreground & text ── */
+  --fg: #111111;
+  --fg-2: #2B2B2B;
+  --muted: #6B7280;
+  --meta: #9CA3AF;
+  /* ── Borders ── */
+  --border: #E5E7EB;
+  --border-soft: #F0EDE9;
+  --row-border: #F3F4F6;
+  --nav-hover: #F9F5F1;
+  --border-strong: #D1D5DB;
+  /* ── Accent (coral) ── */
+  --accent: #E56A4A;
+  --accent-on: #ffffff;
+  --accent-hover: #CC5535;
+  --accent-active: #B74C2F;
+  --accent-soft: rgba(229,106,74,.10);
+  --accent-ring: rgba(229,106,74,.22);
+  /* ── Semantic ── */
+  --success: #0EA464;
+  --success-soft: #ECFDF5;
+  --warn: #D97706;
+  --warn-soft: #FFFBEB;
+  --danger: #DC2626;
+  --danger-soft: #FEF2F2;
+  --info: #2563EB;
+  /* ── Radius ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  /* ── Shadow ── */
+  --shadow-card: 0 1px 2px rgba(17,17,17,.06), 0 8px 20px rgba(17,17,17,.04);
+  --shadow-raised: 0 10px 30px rgba(17,17,17,.14), 0 2px 8px rgba(17,17,17,.08);
+  /* ── Typography ── */
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  /* ── Motion ── */
+  --ease-standard: cubic-bezier(0.2,0,0,1);
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --focus-ring: 0 0 0 3px var(--accent-ring);
+  /* ── Layout ── */
+  --container-max: 1360px;
+  --sidebar-w: 268px;
+  --topbar-h: 64px;
+
+  color-scheme: light;
+}
+
+html.dark {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface-warm: #232323;
+  --surface-2: #232323;
+  --surface-head: #1e1e1e;
+  --fg: #f0f0f0;
+  --fg-2: #e6e6e6;
+  --muted: #9aa0a8;
+  --meta: #7a7f87;
+  --border: #2e2e2e;
+  --border-soft: #262626;
+  --row-border: #262626;
+  --nav-hover: #232323;
+  --border-strong: #3a3a3a;
+  --accent: #EE8D6A;
+  --accent-hover: #F0A07E;
+  --accent-active: #E56A4A;
+  --accent-soft: rgba(238,141,106,.16);
+  --accent-ring: rgba(238,141,106,.28);
+  --success: #22c97a;
+  --success-soft: rgba(34,201,122,.14);
+  --warn: #eab308;
+  --warn-soft: rgba(234,179,8,.14);
+  --danger: #ef4444;
+  --danger-soft: rgba(239,68,68,.14);
+  --shadow-card: none;
+  --shadow-raised: 0 16px 40px rgba(0,0,0,.5);
+
+  color-scheme: dark;
+}
+
+/* ========================================
+   Tailwind v4 theme mapping — shadcn-svelte
+   components consume these automatically
+   ======================================== */
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--fg);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-on);
+  --color-secondary: var(--surface-warm);
+  --color-secondary-foreground: var(--fg);
+  --color-muted: var(--surface-warm);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--surface-warm);
+  --color-accent-foreground: var(--fg);
+  --color-destructive: var(--danger);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--accent);
+
+  /* semantic extras (usable as text-success etc.) */
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-meta: var(--meta);
+  --color-fg2: var(--fg-2);
+  --color-row: var(--row-border);
+  --color-soft: var(--border-soft);
+  --color-nav-hover: var(--nav-hover);
+  --color-border-strong: var(--border-strong);
+  --color-surface: var(--surface);
+  --color-primary-hover: var(--accent-hover);
+  --color-primary-active: var(--accent-active);
+  --color-success-soft: var(--success-soft);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger-soft: var(--danger-soft);
+  --color-surface-warm: var(--surface-warm);
+  --color-surface-head: var(--surface-head);
+
+  /* radius scale per design: sm 8 / md+lg cards 12 / xl 16 */
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+}
+
+/* ========================================
+   Base
+   ======================================== */
+html, body { height: 100%; }
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+input, textarea, select {
+  accent-color: var(--accent);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* ========================================
+   Typography utilities (design system)
+   ======================================== */
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.meta { color: var(--meta); }
+
+/* Caps meta label — 10.5px uppercase wide tracking */
+.caps-label {
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--meta);
+}
+
+/* Page H1 — 28/700/-0.03 */
+.page-h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Panel header title — 13.5/700/-0.01 */
+.panel-title {
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Numeric cells */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Latency thresholds */
+.lat { font-weight: 750; font-variant-numeric: tabular-nums; }
+.lat.good { color: var(--success); }
+.lat.mid { color: var(--warn); }
+.lat.bad { color: var(--danger); }
+
+/* Status pills — log-status / badge-live language */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .02em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+.status-ok { background: var(--success-soft); color: var(--success); border-color: color-mix(in srgb, var(--success) 30%, transparent); }
+.status-fail { background: var(--danger-soft); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); }
+.status-muted { background: var(--surface-warm); color: var(--muted); border-color: var(--border); }
+
+/* Live dot with pulse */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 4px rgba(16,164,100,.14);
+  flex-shrink: 0;
+  animation: pulse 2.2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(16,164,100,.14); }
+  50% { box-shadow: 0 0 0 7px rgba(16,164,100,.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+
+/* Bar track / fill (cost share, progress) */
+.bar-track { flex: 1; height: 8px; background: var(--row-border); border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 999px; transition: width var(--motion-base) var(--ease-standard); }
+
+/* ========================================
+   Shared surfaces
+   ======================================== */
+.card-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17,17,17,.38);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* ========================================
+   Scrollbars
+   ======================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 120, 120, 0.35) transparent;
+}
+.dark * {
+  scrollbar-color: rgba(180, 180, 180, 0.3) transparent;
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 120, 120, 0.35);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background-color: rgba(120, 120, 120, 0.55); }
+.dark *::-webkit-scrollbar-thumb { background-color: rgba(180, 180, 180, 0.3); }
+.dark *::-webkit-scrollbar-thumb:hover { background-color: rgba(180, 180, 180, 0.5); }

@@ -1,0 +1,10 @@
+epic_name: dashboard-navigation
+description: >
+  built a dashboard UI, navigation tab left side, collapsible. consist of Home, Providers, API Key, Logs
+waves:
+  - wave: 1
+    description: "Implement the UI Shell (Collapsible Left Nav) and routing skeleton (Home, Providers, API Key, Logs)."
+  - wave: 2
+    description: "Move the existing Providers list into the 'Providers' tab/component."
+  - wave: 3
+    description: "Scaffold the placeholder views for Home, API Key, and Logs."

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "storyId": "8.6",
+  "assessedAt": "2026-08-11T04:46:55Z",
+  "assessedBy": "@analyst",
+  "result": "COMPLEX",
+  "overridden": false,
+
+  "dimensions": {
+    "scope": {
+      "score": 4,
+      "notes": "Seven functional requirements spanning request translation, response translation, streaming synthesis, error shaping, token counting, endpoint wiring and a config fix. Three new translator classes plus schema enums. Large but bounded."
+    },
+    "integration": {
+      "score": 5,
+      "notes": "Introduces a second inbound protocol into a codebase that currently has exactly one. Touches the proxy path, the SSE emitter, AppJsonContext, Program.cs, providers.example.json and the dashboard. Streaming integration is the highest-risk surface in the entire codebase."
+    },
+    "infrastructure": {
+      "score": 2,
+      "notes": "No new external services. Reference translator in-repo provides patterns. Anthropic API contract is the dependency, and it is documented."
+    },
+    "knowledge": {
+      "score": 4,
+      "notes": "Anthropic event model does not map one-to-one onto OpenAI deltas. The in-repo reference implements exactly this translation, but extracting the pattern correctly into AOT-safe C# is non-trivial. Team has not shipped a translator before."
+    },
+    "risk": {
+      "score": 5,
+      "notes": "Two pre-existing SSE defects block this story (single-newline framing, post-start response mutation). Streaming translation cannot be built on a path that throws at the end of every successful stream. Estimate is the least reliable in Epic 8."
+    }
+  },
+
+  "totalScore": 20,
+
+  "pipelinePhases": [
+    "requirements",
+    "assess",
+    "research",
+    "spec",
+    "critique"
+  ],
+
+  "flags": [
+    "STREAMING-RISK: spike the streaming path before committing the 40h estimate",
+    "SSE-DEFECTS: single-newline framing and post-start response mutation must be fixed as prerequisites",
+    "AOT-UNMEASURED: Anthropic schema registration cost versus the 50MB idle ceiling is unmeasured",
+    "CLIENT-VALIDATION: verify against a real Anthropic-format client, not just unit tests"
+  ],
+
+  "estimatedEffort": "40 hours baseline; spike recommended before commitment"
+}

@@ -1,0 +1,71 @@
+$schema: 'http://json-schema.org/draft-07/schema#'
+storyId: "STORY-CLI"
+createdAt: "2026-08-09T17:35:00Z"
+createdBy: "@architect"
+status: done
+complexity: STANDARD
+estimatedEffort: "1 day"
+phases:
+  - id: phase-1
+    name: "ProxyService Decoupling"
+    description: "Decouple the core LLM execution logic from HttpContext"
+    subtasks:
+      - id: "1.1"
+        description: "Create ProxyExecutionRequest and ProxyExecutionResult POCOs"
+        service: backend
+        files:
+          - "Models/ProxyExecutionRequest.cs"
+          - "Models/ProxyExecutionResult.cs"
+        verification:
+          type: command
+          command: "dotnet build"
+        status: done
+        notes: "Keep classes AOT-friendly, no complex serialization attributes required for internal passing."
+      - id: "1.2"
+        description: "Extract core execution logic from HttpContext into ExecuteCompletionAsync"
+        service: backend
+        files:
+          - "Services/IProxyService.cs"
+          - "Services/ProxyService.cs"
+        verification:
+          type: command
+          command: "dotnet build"
+        status: done
+        dependencies: ["1.1"]
+        notes: "Move the logic inside HandleChatCompletionAsync to a new method ExecuteCompletionAsync that takes ProxyExecutionRequest."
+      - id: "1.3"
+        description: "Refactor HandleChatCompletionAsync to bridge HttpContext and the new ExecuteCompletionAsync"
+        service: backend
+        files:
+          - "Services/ProxyService.cs"
+        verification:
+          type: command
+          command: "dotnet test Tests/ProxyServiceTests.cs"
+        status: done
+        dependencies: ["1.2"]
+        notes: "Ensure the existing tests still pass. The stream callbacks should write directly to HttpContext.Response."
+  - id: phase-2
+    name: "CLI Execution Engine"
+    description: "Implement headless argument parsing and execution"
+    subtasks:
+      - id: "2.1"
+        description: "Parse -m and -p arguments and suppress logging in CLI mode"
+        service: backend
+        files:
+          - "Program.cs"
+        verification:
+          type: command
+          command: "dotnet run -- -m fake/model -p 'test' || true"
+        status: done
+        notes: "Detect CLI mode before WebApplication.CreateBuilder. Use builder.Logging.ClearProviders() if in CLI mode."
+      - id: "2.2"
+        description: "Execute LLM request and write clean stdout response"
+        service: backend
+        files:
+          - "Program.cs"
+        verification:
+          type: command
+          command: "dotnet build"
+        status: done
+        dependencies: ["2.1", "1.2"]
+        notes: "Construct JSON payload with the prompt, call IProxyService.ExecuteCompletionAsync, parse the text, Console.WriteLine, and return 0 (bypass app.Run)."

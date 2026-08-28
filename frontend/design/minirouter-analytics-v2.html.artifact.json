@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "minirouter-analytics-v2.html",
+  "entry": "minirouter-analytics-v2.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-28T06:26:45.147Z",
+  "updatedAt": "2026-08-28T06:56:59.865Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

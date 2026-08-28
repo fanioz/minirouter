@@ -1,0 +1,35 @@
+[
+  {
+    "id": "opencode-free",
+    "name": "OpenCode Free",
+    "baseUrl": "https://opencode.ai/zen",
+    "apiKey": "public",
+    "enabled": true,
+    "transportHeaders": {
+      "x-opencode-client": "desktop"
+    }
+  },
+  {
+    "id": "openai-primary",
+    "name": "OpenAI Primary",
+    "baseUrl": "https://api.openai.com",
+    "apiKey": "sk-your-primary-key",
+    "enabled": true
+  },
+  {
+    "id": "openai-secondary",
+    "name": "OpenAI Secondary",
+    "baseUrl": "https://api.openai.com",
+    "apiKey": "sk-your-secondary-key",
+    "enabled": true,
+    "models": ["gpt-4o", "gpt-4o-mini"]
+  },
+  {
+    "id": "anthropic-example",
+    "name": "Anthropic (Example)",
+    "baseUrl": "https://api.anthropic.com",
+    "apiKey": "sk-ant-your-anthropic-key",
+    "enabled": false,
+    "model": "claude-3-haiku"
+  }
+]

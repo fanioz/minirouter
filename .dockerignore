@@ -1,0 +1,15 @@
+bin/
+obj/
+frontend/node_modules/
+.git/
+.env
+minirouter.db
+aot_run.log
+server.log
+test1_out.txt
+test2_out.txt
+publish/
+publish-osx/
+*.md
+*.sh
+*.py

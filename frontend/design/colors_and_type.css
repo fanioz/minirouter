@@ -1,0 +1,120 @@
+/* MiniRouter — Neutral Modern / Warm Paper Design System
+   Source: minirouter-analytics-v2.html (v2 Admin Analytics, 64KB)
+   Provenance: 6a3e0d06-47c7-41fe-848c-3ce0ad840746 → 111d9616-ed1b-4313-ae9a-35df1d2ec2bc
+   Tokens are verbatim where noted; OKLCH is provided alongside hex for downstream use.
+*/
+:root{
+  /* ── Background & surfaces ── */
+  --bg: #FDFAF6;                /* oklch(0.982 0.015 55) warm paper */
+  --surface: #ffffff;           /* oklch(1 0 0) card / shell */
+  --surface-warm: #FFF7F2;      /* oklch(0.987 0.012 45) pill / soft badge */
+  --surface-2: #FFF7F2;
+  /* ── Foreground & text ── */
+  --fg: #111111;                /* oklch(0.17 0 0) primary text */
+  --fg-2: #2B2B2B;              /* oklch(0.26 0 0) mono cells */
+  --muted: #6B7280;             /* oklch(0.58 0.02 260) secondary */
+  --meta: #9CA3AF;              /* oklch(0.70 0.02 260) labels / meta */
+  /* ── Borders ── */
+  --border: #E5E7EB;            /* oklch(0.92 0.006 260) */
+  --border-soft: #F0EDE9;       /* oklch(0.95 0.008 70) warm divider */
+  /* ── Accent (coral) ── */
+  --accent: #E56A4A;            /* oklch(0.64 0.16 32) primary CTA */
+  --accent-on: #ffffff;
+  --accent-hover: #CC5535;      /* oklch(0.59 0.16 32) */
+  --accent-active: #B74C2F;     /* oklch(0.54 0.16 32) */
+  --accent-soft: rgba(229,106,74,.10);
+  --accent-ring: rgba(229,106,74,.22); /* focus */
+  /* ── Semantic ── */
+  --success: #0EA464;           /* oklch(0.62 0.15 155) */
+  --success-soft: #ECFDF5;      /* oklch(0.98 0.02 155) */
+  --warn: #D97706;              /* oklch(0.64 0.12 75) */
+  --warn-soft: #FFFBEB;         /* oklch(0.99 0.012 85) */
+  --danger: #DC2626;            /* oklch(0.55 0.20 28) */
+  --danger-soft: #FEF2F2;       /* oklch(0.98 0.01 18) */
+  --info: #2563EB;              /* oklch(0.55 0.19 260) auxiliary */
+  /* ── Radius ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+  /* ── Shadow ── */
+  --shadow-card: 0 1px 2px rgba(17,17,17,.06), 0 8px 20px rgba(17,17,17,.04);
+  --shadow-raised: 0 10px 30px rgba(17,17,17,.14), 0 2px 8px rgba(17,17,17,.08);
+  /* ── Typography ── */
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 10.5px;
+  --text-sm: 12px;
+  --text-base: 13.5px;
+  --text-lg: 15px;
+  --text-xl: 28px;
+  --tracking-tight: -0.03em;
+  --tracking-label: 0.08em;
+  --leading-tight: 1.05;
+  --leading-normal: 1.5;
+  /* ── Spacing scale (4pt + warm extras) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  /* ── Motion ── */
+  --ease-standard: cubic-bezier(0.2,0,0,1);
+  --motion-fast: 160ms;
+  --motion-base: 220ms;
+  --focus-ring: 0 0 0 3px var(--accent-ring);
+  /* ── Layout ── */
+  --container-max: 1360px;
+  --sidebar-w: 268px;
+  --topbar-h: 64px;
+}
+
+/* Dark scheme — verbatim token remap from source */
+html.dark{
+  --bg:#0f0f0f;
+  --surface:#1a1a1a;
+  --surface-warm:#232323;
+  --surface-2:#232323;
+  --fg:#f0f0f0;
+  --fg-2:#e6e6e6;
+  --muted:#9aa0a8;
+  --meta:#7a7f87;
+  --border:#2e2e2e;
+  --border-soft:#262626;
+  --accent:#EE8D6A;
+  --accent-hover:#F0A07E;
+  --accent-active:#E56A4A;
+  --accent-soft:rgba(238,141,106,.16);
+  --accent-ring:rgba(238,141,106,.28);
+  --success:#22c97a;
+  --success-soft:rgba(34,201,122,.14);
+  --warn:#eab308;
+  --warn-soft:rgba(234,179,8,.14);
+  --danger:#ef4444;
+  --danger-soft:rgba(239,68,68,.14);
+  --shadow-card:none;
+  --shadow-raised:0 16px 40px rgba(0,0,0,.5);
+}
+
+/* Base resets used by all surfaces */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-body);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.meta{color:var(--meta)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus-ring)}

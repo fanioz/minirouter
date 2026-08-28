@@ -1,0 +1,180 @@
+{
+  "storyId": "8.6",
+  "researchedAt": "2026-08-11T00:00:00Z",
+  "researchedBy": "@dev",
+  "status": "complete",
+  "question": "Can MiniRouter synthesize Anthropic Messages SSE correctly from the existing OpenAI Chat Completions stream without porting 9Router's general translator framework?",
+  "recommendation": {
+    "decision": "proceed-with-a-one-day-spike",
+    "rationale": "The required text and tool-use event lifecycle is a bounded per-request state machine and does not require the reference pivot framework. The spike must first correct MiniRouter's response-start ordering and preserve full SSE event framing, because the current line-oriented relay cannot emit valid Anthropic events."
+  },
+  "sources": [
+    {
+      "type": "reference-code",
+      "path": "docs/reff/open-sse/translator/response/openai-to-claude.js",
+      "finding": "The reference synthesizes Anthropic events with request-local state: message start, monotonic content-block indexes, text/thinking block state, indexed tool calls, usage, and terminal finish reason."
+    },
+    {
+      "type": "reference-code",
+      "path": "docs/reff/open-sse/translator/index.js",
+      "finding": "The general registry and OpenAI pivot exist to support a 13-format matrix. MiniRouter's single Anthropic-to-OpenAI pair should use a direct translator instead."
+    },
+    {
+      "type": "reference-code",
+      "path": "docs/reff/open-sse/translator/request/claude-to-openai.js",
+      "finding": "The inbound mapping covers top-level system content, text and base64 image blocks, tool_use/tool_result correspondence, tools, and tool choice."
+    },
+    {
+      "type": "reference-code",
+      "path": "docs/reff/open-sse/translator/concerns/finishReason.js",
+      "finding": "The required terminal mapping is OpenAI stop to Anthropic end_turn, length to max_tokens, and tool_calls to tool_use."
+    },
+    {
+      "type": "official-documentation",
+      "url": "https://docs.anthropic.com/en/api/messages-streaming",
+      "finding": "An Anthropic SSE stream starts with message_start, emits zero or more indexed content blocks, then message_delta and message_stop. Clients dispatch on the SSE event name; unknown event types must be handled gracefully."
+    },
+    {
+      "type": "local-code",
+      "path": "Services/ProxyService.cs",
+      "finding": "The current relay reads upstream by line, writes every line with one newline, and sets StatusCode and ContentType after the streaming callback can start the response."
+    }
+  ],
+  "requiredState": {
+    "messageStartSent": "Ensures message_start is emitted once before any content event.",
+    "messageId": "Derived from the first upstream chunk, with a valid msg_ fallback.",
+    "model": "Captured from the first upstream chunk for the message envelope.",
+    "nextContentBlockIndex": "Monotonically allocates Anthropic content block indexes.",
+    "textBlock": "Tracks whether a text block is open and its assigned index.",
+    "toolCalls": "Maps each OpenAI tool-call index to its Anthropic id, name, block index, and optional argument buffer.",
+    "usage": "Retains the final include_usage payload when the upstream emits it.",
+    "finishReason": "Retains the terminal OpenAI finish_reason until message_delta is synthesized."
+  },
+  "eventMapping": [
+    {
+      "upstream": "first OpenAI chunk",
+      "anthropic": "message_start",
+      "details": "Emit an assistant message envelope with empty content, null stop fields, and zeroed usage before any block."
+    },
+    {
+      "upstream": "choices[0].delta.content",
+      "anthropic": "content_block_start followed by content_block_delta(text_delta)",
+      "details": "Open one text block lazily, retain its index for subsequent text deltas, and close it before a tool-use block or terminal event."
+    },
+    {
+      "upstream": "choices[0].delta.tool_calls[index]",
+      "anthropic": "content_block_start(tool_use) followed by content_block_delta(input_json_delta)",
+      "details": "Create one block per OpenAI tool-call index; preserve the original tool-call id and emit every function.arguments fragment under that block index."
+    },
+    {
+      "upstream": "choices[0].finish_reason",
+      "anthropic": "content_block_stop, message_delta, message_stop",
+      "details": "Close every open block, map stop to end_turn, length to max_tokens, and tool_calls to tool_use, then emit terminal usage and message_stop."
+    },
+    {
+      "upstream": "usage-only OpenAI chunk",
+      "anthropic": "state update only",
+      "details": "Do not create a content block. Retain prompt_tokens and completion_tokens for the terminal message_delta."
+    }
+  ],
+  "scope": {
+    "include": [
+      "text blocks",
+      "base64 image request blocks",
+      "tool_use and tool_result request mapping",
+      "incremental tool-call argument handling",
+      "finish reasons",
+      "usage mapping",
+      "Anthropic error envelope",
+      "count_tokens approximation"
+    ],
+    "defer": [
+      "thinking_delta and signature_delta",
+      "server_tool_use and server tool result blocks",
+      "web search result blocks",
+      "OpenAI Responses API translation",
+      "multi-format pivot registry",
+      "tool-argument sanitization beyond preserving valid JSON fragments"
+    ],
+    "note": "Deferred event classes must be ignored or converted to a clear Anthropic error rather than corrupting stream ordering. Unknown Anthropic event types may be introduced over time, so the outward writer should remain forward-compatible."
+  },
+  "risks": [
+    {
+      "id": "R-1",
+      "severity": "critical",
+      "risk": "ProxyService starts writing before it assigns response status and content type.",
+      "evidence": "HandleChatCompletionAsync assigns response metadata after ExecuteCompletionAsync, while OnStreamChunkAsync can write during execution.",
+      "mitigation": "Set the streaming status, content type, cache headers, and any required response headers before invoking ExecuteCompletionAsync. Never mutate response state after the first write."
+    },
+    {
+      "id": "R-2",
+      "severity": "critical",
+      "risk": "The relay discards upstream SSE event boundaries and re-emits individual lines with a single newline.",
+      "evidence": "ProxyService reads with ReadLineAsync and writes line + newline, so blank separator lines cannot become the required double-newline terminator.",
+      "mitigation": "Introduce an SSE event reader that groups event and data fields through a blank line, then have the Anthropic stream translator serialize each synthesized event as event: name, data: JSON, blank line."
+    },
+    {
+      "id": "R-3",
+      "severity": "high",
+      "risk": "OpenAI tool calls arrive by tool-call index and their function.arguments may be fragmented.",
+      "evidence": "The reference retains indexed tool call state and buffers fragments before final output.",
+      "mitigation": "Map each index to a stable Anthropic block index. Emit each fragment as input_json_delta unless validation or sanitization is explicitly required; do not parse incomplete JSON."
+    },
+    {
+      "id": "R-4",
+      "severity": "medium",
+      "risk": "The chosen upstream might not emit usage even when include_usage is requested.",
+      "evidence": "MiniRouter injects stream_options.include_usage but only captures usage when an upstream supplies it.",
+      "mitigation": "Emit zero values when usage is unavailable, document that behavior, and retain received values for the terminal message_delta."
+    },
+    {
+      "id": "R-5",
+      "severity": "medium",
+      "risk": "A fully typed Anthropic schema could increase Native AOT footprint beyond the success threshold.",
+      "evidence": "The story identifies the AppJsonContext cost as unmeasured.",
+      "mitigation": "Use JsonNode for passthrough and variant content; use a small source-generated DTO set only for stable request and response envelopes; measure published binary size and idle RSS in the spike."
+    }
+  ],
+  "spike": {
+    "goal": "Prove that a real Anthropic-format client accepts a streamed text completion from an OpenAI-compatible upstream.",
+    "inScope": [
+      "correct response metadata ordering",
+      "event-aware upstream SSE reading",
+      "message_start, one text content_block_start, text deltas, content_block_stop, message_delta, and message_stop",
+      "event: and data: serialization with double-newline framing",
+      "one end-to-end client verification",
+      "published AOT binary size and idle RSS measurement"
+    ],
+    "outOfScope": [
+      "tool use",
+      "images",
+      "non-streaming response translation",
+      "count_tokens",
+      "dashboard work"
+    ],
+    "exitCriteria": [
+      "Every emitted event has a named SSE event field and exactly one blank-line terminator.",
+      "The real target client consumes the stream to completion without parser errors.",
+      "No response-state mutation occurs after the first body write.",
+      "Published AOT size and idle RSS are recorded against the Epic 8 limits."
+    ]
+  },
+  "estimate": {
+    "beforeSpike": "40 hours baseline, high variance",
+    "afterResearch": "Retain the 40 hour baseline until the spike proves framing and target-client compatibility. The core mapping is bounded, but the relay must be refactored from line passthrough to event-aware streaming."
+  },
+  "openQuestions": [
+    {
+      "question": "Should the first production scope emit tool argument fragments immediately or buffer them for sanitization at block close?",
+      "default": "Emit fragments immediately, matching Anthropic's documented input_json_delta contract and avoiding latency; add sanitization only for a demonstrated upstream incompatibility."
+    },
+    {
+      "question": "Which real Anthropic-format client is the acceptance target?",
+      "default": "Claude Code, because it is the stated unlock and depends on both /v1/messages and /v1/messages/count_tokens."
+    },
+    {
+      "question": "Should 8.5 proceed despite the open admin surface?",
+      "default": "Do not proceed without evidence of pooled-key demand or a prior authentication decision; see Story 8.5's explicit gate."
+    }
+  ]
+}

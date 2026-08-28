@@ -1,0 +1,287 @@
+{
+  "storyId": "8.6",
+  "gatheredAt": "2026-08-11T04:46:55Z",
+  "source": "existing",
+  "gatheredBy": "@analyst",
+  "elicitationVersion": "2.0",
+
+  "functional": [
+    {
+      "id": "FR-1",
+      "description": "Accept POST /v1/messages requests in Anthropic Messages format, authenticated by the existing API key filter.",
+      "priority": "P0",
+      "rationale": "Unlocks Claude Code and other Anthropic-format clients against any OpenAI-compatible upstream already configured.",
+      "acceptance": [
+        "Endpoint is registered and guarded by ApiKeyEndpointFilter like /v1/chat/completions",
+        "Explicit providerId/modelName routing works on the new endpoint",
+        "Comma-separated fallback chains (Story 7.1) work on the new endpoint"
+      ]
+    },
+    {
+      "id": "FR-2",
+      "description": "Translate an inbound Anthropic Messages request into an OpenAI Chat Completions request body.",
+      "priority": "P0",
+      "rationale": "Upstream providers only speak OpenAI Chat Completions; translation is what makes the endpoint useful.",
+      "acceptance": [
+        "system field handled in both top-level string and block-array forms",
+        "text blocks pass through; image blocks become image_url base64 data URIs",
+        "tool_use blocks become tool_calls; tool_result blocks become tool role messages",
+        "stop_sequences maps to stop; max_tokens passes through without an invented default",
+        "tool_use_id and tool_call_id correspondence preserved exactly"
+      ]
+    },
+    {
+      "id": "FR-3",
+      "description": "Translate a non-streaming OpenAI Chat Completions response into an Anthropic Messages response.",
+      "priority": "P0",
+      "rationale": "Client cannot consume an OpenAI-shaped response body.",
+      "acceptance": [
+        "choices[0].message.content becomes a content block array",
+        "tool_calls become tool_use blocks",
+        "finish_reason maps to stop_reason: stop to end_turn, length to max_tokens, tool_calls to tool_use",
+        "prompt_tokens and completion_tokens map to input_tokens and output_tokens",
+        "Envelope includes id, type message, role assistant, and model"
+      ]
+    },
+    {
+      "id": "FR-4",
+      "description": "Synthesize an ordered Anthropic SSE event sequence from an OpenAI delta stream.",
+      "priority": "P0",
+      "rationale": "The two streaming models do not map one-to-one; this is the core technical risk of the story.",
+      "acceptance": [
+        "Emits message_start, content_block_start, content_block_delta xN, content_block_stop, message_delta, message_stop in order",
+        "Each event carries both an SSE event name and a data payload",
+        "Incremental OpenAI function.arguments fragments accumulate into input_json_delta under the correct block index",
+        "message_delta carries terminal stop_reason and output token count"
+      ]
+    },
+    {
+      "id": "FR-5",
+      "description": "Return upstream errors translated into Anthropic error shape rather than passing through OpenAI error bodies.",
+      "priority": "P1",
+      "rationale": "Anthropic clients parse a specific error envelope; an OpenAI error body surfaces as an unhelpful parse failure.",
+      "acceptance": [
+        "Errors returned as type error with nested error.type and error.message",
+        "Verified for 400, 401, 429 and 502 upstream statuses"
+      ]
+    },
+    {
+      "id": "FR-6",
+      "description": "Implement POST /v1/messages/count_tokens returning an approximate token count.",
+      "priority": "P1",
+      "rationale": "Claude Code calls this endpoint; absent it, the client errors before issuing any completion request.",
+      "acceptance": [
+        "Reuses the Story 8.4 estimator at roughly 4 characters per token",
+        "Response is labelled approximate rather than presented as exact"
+      ]
+    },
+    {
+      "id": "FR-7",
+      "description": "Correct or annotate the Anthropic sample entry in providers.example.json.",
+      "priority": "P2",
+      "rationale": "The shipped sample points at api.anthropic.com and would be called at /v1/chat/completions with a Bearer header, which cannot work.",
+      "acceptance": [
+        "Sample either removed, corrected, or annotated as requiring translation"
+      ]
+    }
+  ],
+
+  "nonFunctional": [
+    {
+      "id": "NFR-1",
+      "description": "Idle RSS remains under 50 MB and peak under 150 MB after the Anthropic schema is added to the AOT JSON context.",
+      "category": "performance"
+    },
+    {
+      "id": "NFR-2",
+      "description": "Zero new Native AOT trimming warnings; every newly serialized type registered in AppJsonContext.",
+      "category": "reliability"
+    },
+    {
+      "id": "NFR-3",
+      "description": "Existing /v1/chat/completions behavior is unchanged for both streaming and non-streaming requests.",
+      "category": "reliability"
+    },
+    {
+      "id": "NFR-4",
+      "description": "Translation adds negligible latency relative to the existing sub-5ms proxy overhead target.",
+      "category": "performance"
+    }
+  ],
+
+  "constraints": [
+    {
+      "id": "CON-1",
+      "description": "Native AOT forbids reflection-based serialization; all JSON handling must use the source-generated AppJsonContext or JsonNode.",
+      "type": "technical"
+    },
+    {
+      "id": "CON-2",
+      "description": "Only one direction pair is in scope (Anthropic to OpenAI). The reference pivot abstraction serving 13 formats must not be ported.",
+      "type": "technical"
+    },
+    {
+      "id": "CON-3",
+      "description": "Two existing SSE defects block this work and must be fixed within the story: the response emits a single newline rather than the double-newline SSE event terminator, and ProxyService.cs:82-83 mutates response state after the body has started.",
+      "type": "technical"
+    },
+    {
+      "id": "CON-4",
+      "description": "Reference material is read-only. docs/reff is a vendored copy of 9Router used for pattern extraction, not a dependency to link against.",
+      "type": "technical"
+    }
+  ],
+
+  "assumptions": [
+    {
+      "id": "ASM-1",
+      "description": "The 40 hour estimate was derived from reference LOC, which is a weak proxy for streaming translation effort. A spike is recommended before commitment.",
+      "risk": "high"
+    },
+    {
+      "id": "ASM-2",
+      "description": "The AOT footprint cost of the Anthropic message schema is unmeasured, yet NFR-1 asserts a 50 MB idle ceiling.",
+      "risk": "medium"
+    },
+    {
+      "id": "ASM-3",
+      "description": "Thinking blocks, modality negotiation and prefetch concerns from the reference are assumed unnecessary for a single Anthropic to OpenAI pair.",
+      "risk": "medium"
+    },
+    {
+      "id": "ASM-4",
+      "description": "Story 8.4 lands first, making its token estimator available to FR-6. If not, FR-6 needs its own estimator.",
+      "risk": "low"
+    }
+  ],
+
+  "domainModel": [
+    {
+      "entity": "AnthropicRequest",
+      "description": "Inbound Messages payload: model, messages, system, max_tokens, stop_sequences, tools, stream.",
+      "relationships": ["translates to OpenAI ChatCompletionRequest"]
+    },
+    {
+      "entity": "ContentBlock",
+      "description": "Anthropic content unit: text, image, tool_use or tool_result.",
+      "relationships": ["belongs to AnthropicRequest.messages", "belongs to AnthropicResponse.content"]
+    },
+    {
+      "entity": "AnthropicResponse",
+      "description": "Outbound Messages payload: id, type, role, model, content blocks, stop_reason, usage.",
+      "relationships": ["translated from OpenAI ChatCompletionResponse"]
+    },
+    {
+      "entity": "StreamEvent",
+      "description": "One SSE event in the Anthropic sequence, carrying an event name and a JSON data payload.",
+      "relationships": ["synthesized from OpenAI delta chunks"]
+    },
+    {
+      "entity": "TranslationSchema",
+      "description": "Enums for role, block type and finish reason, so mappings are never expressed as inline string literals.",
+      "relationships": ["used by request, response and stream translators"]
+    }
+  ],
+
+  "interactions": [
+    {
+      "flow": "Non-streaming completion",
+      "description": "Anthropic client posts to /v1/messages, router translates, calls upstream, translates the response back.",
+      "states": ["authenticated", "translated", "dispatched", "response translated", "returned"]
+    },
+    {
+      "flow": "Streaming completion",
+      "description": "Same entry, but the OpenAI delta stream is synthesized into an ordered Anthropic event sequence as chunks arrive.",
+      "states": ["message_start", "content_block_start", "content_block_delta", "content_block_stop", "message_delta", "message_stop"]
+    },
+    {
+      "flow": "Token counting",
+      "description": "Client posts to /v1/messages/count_tokens and receives an approximate count without any upstream call.",
+      "states": ["authenticated", "estimated", "returned"]
+    }
+  ],
+
+  "edgeCases": [
+    {
+      "scenario": "Upstream returns tool call argument fragments split across many chunks.",
+      "handling": "Accumulate per block index and emit input_json_delta; never assume one chunk equals one complete argument.",
+      "severity": "high"
+    },
+    {
+      "scenario": "Stream terminates before message_delta, so stop_reason and output token count are never known.",
+      "handling": "Emit a terminal message_delta with a best-effort stop_reason so the client is not left waiting.",
+      "severity": "high"
+    },
+    {
+      "scenario": "Client sends multi-turn history containing tool_use and tool_result pairs.",
+      "handling": "Preserve tool_use_id to tool_call_id correspondence across all turns; mismatches produce confusing downstream errors.",
+      "severity": "critical"
+    },
+    {
+      "scenario": "Upstream provider returns an OpenAI-shaped error mid-stream.",
+      "handling": "Translate to Anthropic error shape; do not pass the OpenAI body through.",
+      "severity": "medium"
+    },
+    {
+      "scenario": "Anthropic client rejects the SSE framing because events are single-newline terminated.",
+      "handling": "Fix the terminator to a double newline as part of CON-3; the Svelte dashboard parser tolerates both.",
+      "severity": "critical"
+    },
+    {
+      "scenario": "system supplied as a block array rather than a string.",
+      "handling": "Handle both forms; concatenate blocks into a single system role message.",
+      "severity": "medium"
+    }
+  ],
+
+  "terminology": [
+    {
+      "term": "Pivot translation",
+      "definition": "Routing every conversion through OpenAI as an intermediate format. Used by the reference to serve 13 formats. Explicitly out of scope here.",
+      "aliases": ["intermediate format"]
+    },
+    {
+      "term": "Direct translator",
+      "definition": "A translator registered on an exact source-to-target pair, avoiding the lossy double hop of a pivot.",
+      "aliases": []
+    },
+    {
+      "term": "Concern",
+      "definition": "A reference module holding shared cross-format logic such as tool calls, finish reasons or usage mapping.",
+      "aliases": []
+    },
+    {
+      "term": "Content block",
+      "definition": "Anthropic's structured content unit. OpenAI uses a flat string or an array of typed parts instead.",
+      "aliases": ["block"]
+    },
+    {
+      "term": "stop_reason",
+      "definition": "Anthropic's completion terminator field. Corresponds to OpenAI finish_reason with a different value vocabulary.",
+      "aliases": []
+    }
+  ],
+
+  "openQuestions": [
+    {
+      "question": "Should a streaming spike run before committing the full 40 hour estimate, as the story itself recommends?",
+      "priority": "high",
+      "blocksProgress": true
+    },
+    {
+      "question": "What is the actual AOT binary size and RSS cost of registering the Anthropic message schema?",
+      "priority": "high",
+      "blocksProgress": false
+    },
+    {
+      "question": "Is Claude Code the specific target client, or should compatibility be validated against a broader set of Anthropic-format clients?",
+      "priority": "medium",
+      "blocksProgress": false
+    },
+    {
+      "question": "Should extended thinking blocks be supported later, given that thinkingUnified.js was deliberately excluded from scope?",
+      "priority": "low",
+      "blocksProgress": false
+    }
+  ]
+}

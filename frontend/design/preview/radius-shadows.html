@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Radius & Shadows — MiniRouter</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+ body{padding:24px;max-width:980px;margin:0 auto}
+ h1{font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
+ .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow-card);margin-bottom:14px}
+ .label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta);margin-bottom:10px}
+ .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+ .box{width:140px;height:80px;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+<h1>Radius & Shadows</h1>
+<p class="sub">Pill is the dominant shape (all controls). Cards are <code>12px</code>. Shadows are faint by intent — stroke does the separation; dark mode removes <code>shadow-card</code> entirely.</p>
+
+<div class="card">
+  <div class="label">Radius</div>
+  <div class="row">
+    <div class="box" style="border-radius:var(--radius-sm)">sm 8px · icon-btn / switch track</div>
+    <div class="box" style="border-radius:var(--radius-md)">md 12px · card / cost banner</div>
+    <div class="box" style="border-radius:var(--radius-lg)">lg 16px · large surfaces</div>
+    <div style="height:36px;padding:0 18px;border-radius:var(--radius-pill);background:var(--fg);color:white;display:inline-flex;align-items:center;font-size:13px;font-weight:650">pill 9999px · buttons / badges</div>
+  </div>
+  <div class="mono" style="margin-top:10px;font-size:11.5px;color:var(--muted)">Note: <code>.input</code> is the only control that is 10px (not pill) — intentional single exception in source.</div>
+</div>
+
+<div class="card">
+  <div class="label">Shadows — light vs dark</div>
+  <div class="row">
+    <div class="box" style="border-radius:12px;box-shadow:var(--shadow-card)">card · 0 1px 2px + 0 8px 20px @.04</div>
+    <div class="box" style="border-radius:12px;box-shadow:var(--shadow-raised)">raised · drawer / toast</div>
+    <div style="padding:12px;border-radius:12px;background:#1a1a1a;color:#9aa0a8;border:1px solid #2e2e2e;font-family:var(--font-mono);font-size:11px">dark: shadow-card = none<br>shadow-raised = 0 16px 40px rgba(0,0,0,.5)<br>separation via border #2e2e2e</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="label">Warm dividers</div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span style="width:120px;height:1px;background:var(--border);display:inline-block"></span> <span class="mono" style="font-size:11px;color:var(--muted)">--border #E5E7EB · card stroke</span>
+    <span style="width:120px;height:1px;background:var(--border-soft);display:inline-block"></span> <span class="mono" style="font-size:11px;color:var(--muted)">--border-soft #F0EDE9 · gridline / soft divider</span>
+  </div>
+</div>
+</body>
+</html>

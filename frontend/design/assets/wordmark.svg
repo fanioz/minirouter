@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="48" viewBox="0 0 220 48" role="img" aria-label="MiniRouter wordmark">
+  <rect width="220" height="48" rx="10" fill="#111111"/>
+  <!-- mark -->
+  <rect x="10" y="8" width="32" height="32" rx="9" fill="white"/>
+  <text x="26" y="28.5" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="800" fill="#111111">◈</text>
+  <!-- word -->
+  <text x="52" y="22" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="700" letter-spacing="-0.02em" fill="white">MiniRouter</text>
+  <text x="52" y="34" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="600" letter-spacing="0.08em" fill="#9CA3AF">NATIVE AOT • EDGE ROUTER</text>
+</svg>

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  minirouter:
+    image: minirouter:latest
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minirouter
+    ports:
+      - "5050:5000"
+    volumes:
+      - ./providers.json:/app/providers.json
+      - ./minirouter.db:/app/minirouter.db
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'

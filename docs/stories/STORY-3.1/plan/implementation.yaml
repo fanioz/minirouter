@@ -1,0 +1,50 @@
+# Implementation Plan for Story 3.1: Add Model Column and Filter to Request Logs
+
+metadata:
+  epic: Epic 3 - Request Log Observability Enhancements
+  story: Story 3.1 - Add Model Column and Filter to Request Logs
+  architect: Aria (Visionary)
+  status: IN_PROGRESS
+
+architecture_decisions:
+  - id: AD-1
+    title: Extend RequestLog Model
+    description: Add a new `Model` property to the `RequestLog` class to capture the downstream LLM model requested.
+    rationale: Provides granular visibility into usage at the model level rather than just provider level.
+  - id: AD-2
+    title: Database Schema Migration
+    description: Modify the `request_log` SQLite table to include a `model` TEXT column. Use `ALTER TABLE` for backwards compatibility with existing databases and add an index for `model` filtering.
+    rationale: Schema must evolve without data loss. Indexing ensures fast filtering performance.
+  - id: AD-3
+    title: API Updates
+    description: Update the `GetLogsAsync` signature in `ILogService` and `LogService` to accept a `string? model` parameter. Modify the `ProxyService` to assign the model name when inserting logs.
+    rationale: Backend must support passing filtering criteria efficiently down to the database level.
+  - id: AD-4
+    title: UI Enhancement
+    description: Update Razor Page `Pages/Logs.cshtml` to add a new Model column and filtering input field for `ModelFilter`.
+    rationale: Direct UI reflection of the PRD requirements using ASP.NET Core Razor Pages binding.
+
+tasks:
+  - id: TASK-1
+    title: Data Model and Interface Updates
+    description: Update `RequestLog.cs` to add `Model` and update `ILogService.cs` to add `model` to `GetLogsAsync`.
+    status: done
+    dependencies: []
+  
+  - id: TASK-2
+    title: SQLite Database Service Updates
+    description: Update `LogService.cs` to add `model TEXT` in `InitializeAsync()` creation and `ALTER TABLE` statements. Add index for `model`. Update `LogRequestAsync` to bind the `$model` parameter. Update `GetLogsAsync` to filter by `$model`.
+    status: done
+    dependencies: [TASK-1]
+
+  - id: TASK-3
+    title: Proxy Service Integration
+    description: Update `ProxyService.cs` inside the execution pipeline to capture the model from the request (e.g., `model = provider.RouteId` or parsed from payload) and assign it to `log.Model` before calling `_logService.LogRequestAsync(log)`.
+    status: done
+    dependencies: [TASK-1, TASK-2]
+
+  - id: TASK-4
+    title: UI and Frontend Updates
+    description: Update `Pages/Logs.cshtml.cs` to accept `[BindProperty(SupportsGet = true)] public string? ModelFilter { get; set; }` and pass it to `GetLogsAsync`. Update `Pages/Logs.cshtml` to display the filter field and the new `Model` column in the data table.
+    status: done
+    dependencies: [TASK-3]

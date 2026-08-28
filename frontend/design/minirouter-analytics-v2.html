@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MiniRouter — Admin Analytics v2</title>
+<style>
+:root{
+  --bg:#FDFAF6;
+  --surface:#ffffff;
+  --surface-warm:#FFF7F2;
+  --surface-2:#FFF7F2;
+  --fg:#111111;
+  --fg-2:#2B2B2B;
+  --muted:#6B7280;
+  --meta:#9CA3AF;
+  --border:#E5E7EB;
+  --border-soft:#F0EDE9;
+  --accent:#E56A4A;
+  --accent-on:#ffffff;
+  --accent-hover:#CC5535;
+  --accent-active:#B74C2F;
+  --accent-soft:rgba(229,106,74,.10);
+  --accent-ring:rgba(229,106,74,.22);
+  --success:#0EA464;
+  --success-soft:#ECFDF5;
+  --warn:#D97706;
+  --warn-soft:#FFFBEB;
+  --danger:#DC2626;
+  --danger-soft:#FEF2F2;
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:16px;
+  --radius-pill:9999px;
+  --font-display:"Inter",-apple-system,system-ui,sans-serif;
+  --font-body:"Inter",-apple-system,system-ui,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono",SFMono-Regular,Menlo,monospace;
+  --shadow-card:0 1px 2px rgba(17,17,17,.06), 0 8px 20px rgba(17,17,17,.04);
+  --shadow-raised:0 10px 30px rgba(17,17,17,.14), 0 2px 8px rgba(17,17,17,.08);
+  --focus-ring:0 0 0 3px var(--accent-ring);
+  --ease-standard:cubic-bezier(0.2,0,0,1);
+  --motion-fast:160ms;
+  --motion-base:220ms;
+  --container-max:1360px;
+}
+/* ── Dark mode — full token remap ── */
+html.dark{
+  --bg:#0f0f0f;
+  --surface:#1a1a1a;
+  --surface-warm:#232323;
+  --surface-2:#232323;
+  --fg:#f0f0f0;
+  --fg-2:#e6e6e6;
+  --muted:#9aa0a8;
+  --meta:#7a7f87;
+  --border:#2e2e2e;
+  --border-soft:#262626;
+  --accent:#EE8D6A;
+  --accent-hover:#F0A07E;
+  --accent-active:#E56A4A;
+  --accent-soft:rgba(238,141,106,.16);
+  --accent-ring:rgba(238,141,106,.28);
+  --success:#22c97a;
+  --success-soft:rgba(34,201,122,.14);
+  --warn:#eab308;
+  --warn-soft:rgba(234,179,8,.14);
+  --danger:#ef4444;
+  --danger-soft:rgba(239,68,68,.14);
+  --shadow-card:none;
+  --shadow-raised:0 16px 40px rgba(0,0,0,.5);
+}
+html.dark body{background:var(--bg);color:var(--fg)}
+html.dark .sidebar{background:var(--surface)}
+html.dark .sidebar-head{border-bottom-color:var(--border)}
+html.dark .brand-mark{background:var(--fg);color:var(--bg)}
+html.dark .nav-item:hover{background:#232323;color:var(--fg)}
+html.dark .nav-item.active{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+html.dark .nav-count{background:#262626;color:var(--muted)}
+html.dark .nav-item.active .nav-count{background:rgba(255,255,255,.14);color:white}
+html.dark .sidebar-foot{background:linear-gradient(180deg, transparent, rgba(26,26,26,.8));border-top-color:var(--border)}
+html.dark .pill{background:#232323;border-color:var(--border-soft);color:var(--fg)}
+html.dark .topbar{background:rgba(15,15,15,.88);border-bottom-color:var(--border);backdrop-filter:saturate(1.2) blur(10px)}
+html.dark .search input,
+html.dark .select,
+html.dark .seg,
+html.dark .btn,
+html.dark .input,
+html.dark .card{border-color:var(--border);background:var(--surface)}
+html.dark .btn:hover{background:#232323;border-color:#3a3a3a}
+html.dark .tab{border-color:var(--border);background:var(--surface);color:var(--muted)}
+html.dark .tab:hover{border-color:#3a3a3a;color:var(--fg)}
+html.dark .tab.active{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+html.dark .seg button.active{background:var(--fg);color:var(--bg)}
+html.dark .comparison{color:#FFD9C2;background:rgba(238,141,106,.14);border-color:rgba(238,141,106,.22)}
+html.dark .badge-muted{background:#262626;color:var(--muted);border-color:var(--border)}
+html.dark .badge-soft{background:rgba(238,141,106,.12);border-color:rgba(238,141,106,.22);color:#EE8D6A}
+html.dark thead th{background:#1e1e1e;border-bottom-color:var(--border);color:var(--meta)}
+html.dark tbody td{border-bottom-color:#262626}
+html.dark tbody tr:hover{background:#232323}
+html.dark tbody tr:focus-within{background:#252525}
+html.dark .chart-meta{border-top-color:var(--border);color:var(--muted)}
+html.dark .bar-track,
+html.dark .progress{background:#262626}
+html.dark .health-card{border-color:var(--border);background:transparent}
+html.dark .health-card:hover{background:#232323;border-color:#333}
+html.dark .copy{border-color:var(--border);background:var(--surface);color:var(--muted)}
+html.dark .copy:hover{background:#232323;border-color:#3a3a3a;color:var(--fg)}
+html.dark .log-item{border-bottom-color:#262626}
+html.dark .log-item:hover{background:#1e1e1e}
+html.dark .model-row{border-bottom-color:#262626}
+html.dark .compare-banner{background:#1e1e1e;border-color:var(--border)}
+html.dark .drawer-bg{background:rgba(0,0,0,.56)}
+html.dark .drawer-panel{background:var(--surface);border-left-color:var(--border)}
+html.dark .switch{background:#3a3a3a}
+html.dark .switch:checked{background:var(--accent)}
+html.dark .gridline{stroke:#262626}
+html.dark .axis{fill:var(--meta)}
+html.dark .line2{opacity:.6}
+html.dark .rank.alt{background:#262626;color:var(--fg);border-color:var(--border)}
+html.dark .kpi-icon{background:#232323;border-color:var(--border)}
+html.dark .toast{background:var(--fg);color:var(--bg)}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{scrollbar-gutter:stable}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+button{font:inherit}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.meta{color:var(--meta)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* layout */
+.shell{display:flex;min-height:100vh}
+.sidebar{
+  width:268px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;
+}
+.sidebar-head{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:var(--fg);color:white;display:grid;place-items:center;font-weight:800;letter-spacing:-.04em;font-size:13px;flex-shrink:0}
+.brand-name{font-weight:700;letter-spacing:-.02em;font-size:15px;line-height:1}
+.brand-sub{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--meta);font-weight:600;margin-top:3px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 4px rgba(16,164,100,.14);flex-shrink:0;animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(16,164,100,.14)}50%{box-shadow:0 0 0 7px rgba(16,164,100,0)}}
+@media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
+.icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:transparent;display:grid;place-items:center;color:var(--muted);cursor:pointer;transition:background var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard)}
+.icon-btn:hover{background:var(--accent-soft);border-color:var(--border);color:var(--fg)}
+.nav{padding:12px 10px 8px;flex:1;overflow:auto;scrollbar-width:thin}
+.nav-group{margin-bottom:16px}
+.nav-label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--meta);font-weight:700;padding:0 10px;margin:10px 0 8px}
+.nav-item{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;font-size:13.5px;font-weight:500;text-align:left;transition:background var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard)}
+.nav-item:hover{background:#F9F5F1;color:var(--fg)}
+.nav-item.active{background:var(--fg);color:white;border-color:var(--fg)}
+.nav-item.active .nav-ico{color:white}
+.nav-item:active{transform:translateY(1px)}
+.nav-ico{width:18px;height:18px;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:999px;background:var(--accent);color:white}
+.nav-count{margin-left:auto;font-size:12px;color:var(--meta);font-weight:600;background:#F3F4F6;padding:2px 7px;border-radius:999px;font-variant-numeric:tabular-nums}
+.nav-item.active .nav-count{background:rgba(255,255,255,.18);color:rgba(255,255,255,.92)}
+.sidebar-foot{padding:12px 10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg, transparent, rgba(253,250,246,.7))}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:9px 10px;border-radius:12px;background:var(--surface-warm);border:1px solid var(--border-soft);font-size:12px;line-height:1.3}
+.switch{appearance:none;width:36px;height:22px;border-radius:999px;background:#E5E7EB;position:relative;cursor:pointer;transition:background var(--motion-fast) var(--ease-standard);flex-shrink:0}
+.switch:checked{background:var(--accent)}
+.switch:before{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:white;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.16);transition:transform var(--motion-fast) var(--ease-standard)}
+.switch:checked:before{transform:translateX(14px)}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:64px;background:rgba(253,250,246,.88);backdrop-filter:saturate(1.5) blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;padding:0 20px 0 24px}
+.breadcrumb{display:flex;align-items:center;gap:10px;font-size:13px;min-width:0}
+.bc{color:var(--muted);white-space:nowrap}
+.bc strong{color:var(--fg)}
+.vsep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.comparison{font-size:12px;font-weight:600;letter-spacing:.01em;color:#7C4A32;background:#FFF1E8;border:1px solid #FFD9C2;padding:5px 10px;border-radius:999px;white-space:nowrap}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.search{position:relative}
+.search input{width:240px;height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:0 12px 0 34px;font-size:13px;outline:none;transition:border-color var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard)}
+.search input::placeholder{color:var(--meta)}
+.search input:focus{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--meta);pointer-events:none}
+.select{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;display:inline-flex;align-items:center;padding:0 10px;gap:8px}
+.select label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.select select{border:0;background:transparent;font-weight:650;font-size:13px;outline:none;cursor:pointer;color:var(--fg)}
+.seg{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;display:inline-flex;align-items:center;padding:3px;gap:2px}
+.seg button{height:28px;padding:0 12px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:13px;font-weight:650;cursor:pointer;transition:all var(--motion-fast) var(--ease-standard)}
+.seg button:hover{color:var(--fg)}
+.seg button.active{background:var(--fg);color:white;border-color:var(--fg)}
+.btn{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:650;display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;transition:background var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard),transform var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard)}
+.btn:hover{border-color:#D1D5DB;background:#FCFCF9}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:white}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:white}
+.btn-primary:active{background:var(--accent-active);border-color:var(--accent-active)}
+
+.content{padding:20px 24px 32px;max-width:var(--container-max);width:100%;margin:0 auto}
+.page-title{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:8px 0 16px}
+.page-title h1{margin:0;font-family:var(--font-display);font-size:28px;letter-spacing:-.03em;line-height:1.05;font-weight:700}
+.page-title p{margin:7px 0 0;color:var(--muted);font-size:13.5px;max-width:62ch;line-height:1.5}
+.title-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-card)}
+.kpi{padding:16px 16px 14px;display:flex;flex-direction:column}
+.kpi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.kpi-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)}
+.kpi-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid var(--border);background:var(--surface-warm);color:var(--fg)}
+.kpi-value{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.kpi-value strong{font-size:26px;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.kpi-value small{font-size:11px;font-weight:800;letter-spacing:.02em;padding:3px 7px;border-radius:999px}
+.up{background:var(--success-soft);color:var(--success);border:1px solid #A7F3D0}
+.down{background:var(--danger-soft);color:var(--danger);border:1px solid #FECACA}
+.kpi-foot{margin-top:8px;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;flex-wrap:wrap}
+.spark{height:28px;width:100%;margin-top:10px;display:block}
+.spark path{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.grid2{display:grid;grid-template-columns:1.62fr .92fr;gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1.32fr .88fr;gap:14px;margin-bottom:14px}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);gap:12px}
+.panel-header h3{margin:0;font-size:13.5px;letter-spacing:-.01em;font-weight:700}
+.panel-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tab{height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:650;color:var(--muted);cursor:pointer;transition:all var(--motion-fast) var(--ease-standard)}
+.tab:hover{color:var(--fg);border-color:#D1D5DB}
+.tab.active{background:var(--fg);color:white;border-color:var(--fg)}
+.tab:focus-visible{box-shadow:var(--focus-ring)}
+.chart-wrap{padding:14px 16px 4px}
+.chart-meta{display:flex;gap:16px;padding:8px 16px 12px;color:var(--muted);font-size:12px;flex-wrap:wrap;align-items:center;border-top:1px solid #F3F4F6;margin-top:4px}
+.legend{display:flex;gap:8px;align-items:center;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend b{color:var(--fg);font-weight:650}
+.mini-bars{display:flex;align-items:end;gap:3px;height:36px}
+.mini-bars i{display:block;width:6px;border-radius:6px;transition:height var(--motion-base) var(--ease-standard)}
+
+.cost-list{padding:12px 14px 14px;display:flex;flex-direction:column;gap:12px}
+.cost-row{display:flex;align-items:center;gap:12px}
+.cost-provider{width:110px;font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:8px;background:#F3F4F6;border-radius:999px;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;transition:width var(--motion-base) var(--ease-standard)}
+.cost-val{width:84px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.cost-sub{font-size:11px;color:var(--muted);font-weight:500}
+.health-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 14px 14px}
+.health-card{border:1px solid var(--border);border-radius:12px;padding:10px 11px;display:flex;gap:10px;align-items:center;transition:border-color var(--motion-fast) var(--ease-standard),background var(--motion-fast) var(--ease-standard)}
+.health-card:hover{border-color:#D1D5DB;background:#FCFCF9}
+.health-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.health-card b{font-size:13px;letter-spacing:-.01em}
+.health-card span{font-size:11px;color:var(--muted)}
+
+.table-wrap{overflow:auto; -webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--meta);font-weight:750;text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;background:#FCFCF9;position:sticky;top:0;z-index:1}
+tbody td{padding:12px 12px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
+tbody tr{transition:background var(--motion-fast) var(--ease-standard)}
+tbody tr:hover{background:#FFF9F5}
+tbody tr:focus-within{background:#FFF4EE}
+.mono-cell{font-family:var(--font-mono);font-size:12px;color:var(--fg-2)}
+.badge{font-size:11px;font-weight:750;letter-spacing:.02em;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;gap:6px;line-height:1}
+.badge-live{background:var(--success);color:white;border-color:var(--success)}
+.badge-warn{background:var(--warn);color:white;border-color:var(--warn)}
+.badge-muted{background:#F3F4F6;color:var(--muted);border-color:#E5E7EB}
+.badge-open{background:var(--danger);color:white;border-color:var(--danger)}
+.badge-soft{background:var(--surface-warm);border-color:#FFD9C2;color:#7C4A32}
+.lat{font-weight:750;font-variant-numeric:tabular-nums}
+.lat.good{color:var(--success)}
+.lat.mid{color:var(--warn)}
+.lat.bad{color:var(--danger)}
+.progress{height:6px;background:#F3F4F6;border-radius:999px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.provider-id{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.01em}
+.provider-id em{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.copy{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--muted);transition:all var(--motion-fast) var(--ease-standard);flex-shrink:0}
+.copy:hover{color:var(--fg);border-color:#D1D5DB;background:#FCFCF9}
+.copy:active{transform:translateY(1px)}
+.copy:focus-visible{box-shadow:var(--focus-ring)}
+.toggle{width:40px;height:24px}
+
+.model-list{padding:6px 14px 10px;display:flex;flex-direction:column}
+.model-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F3F4F6}
+.model-row:last-child{border-bottom:0}
+.rank{width:26px;height:26px;border-radius:50%;background:var(--fg);color:white;display:grid;place-items:center;font-size:12px;font-weight:800;flex-shrink:0}
+.rank.alt{background:#F3F4F6;color:var(--fg);border:1px solid var(--border)}
+.model-name{font-weight:650;font-size:13px;letter-spacing:-.01em}
+.model-meta{font-size:11px;color:var(--muted)}
+.model-right{margin-left:auto;text-align:right;flex-shrink:0}
+.model-right b{font-size:13px;font-variant-numeric:tabular-nums}
+.log-list{display:flex;flex-direction:column}
+.log-item{display:grid;grid-template-columns:84px 1fr auto;gap:10px;padding:11px 14px;border-bottom:1px solid #F3F4F6;align-items:start;transition:background var(--motion-fast) var(--ease-standard)}
+.log-item:hover{background:#FFF9F5}
+.log-item:last-child{border-bottom:0}
+.log-time{font-family:var(--font-mono);font-size:11px;color:var(--meta);padding-top:2px}
+.log-provider{font-weight:700;font-size:13px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.log-model{font-family:var(--font-mono);font-size:11.5px;color:var(--muted)}
+.log-status{font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:3px 7px;border-radius:999px}
+.ok{background:var(--success-soft);color:var(--success);border:1px solid #A7F3D0}
+.fail{background:var(--danger-soft);color:var(--danger);border:1px solid #FECACA}
+.log-msg{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-lat{font-family:var(--font-mono);font-size:12px;color:var(--fg);font-weight:650;white-space:nowrap}
+
+/* chart */
+.area{fill:url(#areaGrad)}
+.line{fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.line2{fill:none;stroke:var(--fg);stroke-width:1.5;stroke-dasharray:4 4;opacity:.5}
+.gridline{stroke:#F0EDE9;stroke-width:1}
+.axis{font-size:10px;fill:var(--meta);font-family:var(--font-mono)}
+
+.compare-banner{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #FFD9C2;background:var(--surface-warm);border-radius:12px;margin-bottom:14px}
+.compare-banner b{font-size:12.5px;letter-spacing:-.01em}
+.compare-banner p{margin:3px 0 0;font-size:12px;color:var(--muted);line-height:1.4}
+
+.drawer{position:fixed;inset:0;display:none;z-index:40}
+.drawer.open{display:block}
+.drawer-bg{position:absolute;inset:0;background:rgba(17,17,17,.38);backdrop-filter:blur(2px)}
+.drawer-panel{position:absolute;right:0;top:0;height:100%;width:min(440px,92vw);background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-raised);overflow:auto;overscroll-behavior:contain}
+.input{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:0 11px;font-size:13px;width:100%;outline:none;transition:border-color var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard)}
+.input::placeholder{color:var(--meta)}
+.input:focus{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.input:disabled{background:#F9FAFB;color:var(--muted);cursor:not-allowed}
+.skel{position:relative;overflow:hidden;background:#F3F4F6;border-radius:8px}
+.skel:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);transform:translateX(-100%);animation:shimmer 1.4s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){.skel:after{animation:none}}
+.empty{padding:32px 16px;text-align:center;color:var(--muted)}
+.empty b{color:var(--fg);display:block;margin-bottom:4px;font-size:13px}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--fg);color:white;padding:11px 14px;border-radius:999px;font-size:13px;font-weight:650;box-shadow:var(--shadow-raised);z-index:50;transform:translateY(8px);opacity:0;transition:opacity var(--motion-base) var(--ease-standard),transform var(--motion-base) var(--ease-standard);pointer-events:none}
+
+@media (max-width:1120px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .search input{width:180px}
+}
+@media (max-width:860px){
+  .shell{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:relative;border-right:0;border-bottom:1px solid var(--border)}
+  .sidebar .nav{display:flex;gap:6px;overflow:auto;padding:8px 10px}
+  .sidebar .nav-group{display:flex;gap:6px;align-items:center;margin:0}
+  .sidebar .nav-label{display:none}
+  .sidebar .nav-item{white-space:nowrap;width:auto}
+  .sidebar-foot{flex-direction:row;align-items:center;justify-content:space-between}
+  .sidebar-foot .pill{flex:1}
+  .topbar{height:auto;min-height:56px;padding:10px 14px;flex-wrap:wrap;gap:10px}
+  .topbar-right{width:100%;justify-content:flex-start;overflow:auto;padding-bottom:2px}
+}
+@media (max-width:640px){
+  .content{padding:16px 14px}
+  .page-title{flex-direction:column}
+  .search{display:none}
+  .title-actions{width:100%}
+  .kpis{gap:10px}
+  .panel-header{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" data-od-id="sidebar" aria-label="Primary navigation">
+    <div class="sidebar-head">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">◈</div>
+        <div>
+          <div class="brand-name">MiniRouter</div>
+          <div class="brand-sub">Native AOT • Edge Router</div>
+        </div>
+      </div>
+      <span class="live-dot" title="Live — all systems nominal" aria-label="Live"></span>
+    </div>
+    <nav class="nav" aria-label="Sections">
+      <div class="nav-group">
+        <div class="nav-label">Operate</div>
+        <button class="nav-item" data-od-id="nav-home" aria-label="Home"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 9 12 3l9 6v11a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span><span class="nav-count">3</span></button>
+        <button class="nav-item" data-od-id="nav-providers" aria-label="Providers"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 1-2 0 1.65 1.65 0 0 0-1-.6 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 6.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 1 0-2c.26-.26.44-.6.6-1A1.65 1.65 0 0 0 6.27 9.18l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 10.9 6.6c.26.26.6.44 1 .6a1.65 1.65 0 0 1 2 0c.26-.26.6-.44 1-.6A1.65 1.65 0 0 0 16.73 6.27l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 11a1.65 1.65 0 0 0 .6 1 1.65 1.65 0 0 1 0 2c-.26.26-.44.6-.6 1Z"/></svg><span>Providers</span></button>
+        <button class="nav-item" data-od-id="nav-presets" aria-label="Presets"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Presets</span></button>
+        <button class="nav-item" data-od-id="nav-models" aria-label="Models"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="M3 12 12 17l9-5"/><path d="M3 17 12 22l9-5"/></svg><span>Models</span><span class="nav-count">18</span></button>
+        <button class="nav-item" data-od-id="nav-playground" aria-label="Playground"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Playground</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Observe</div>
+        <button class="nav-item active" data-od-id="nav-analytics" aria-current="page" aria-label="Analytics"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16 11 10l3 5 4-6"/></svg><span>Analytics</span><span class="nav-badge">v2</span></button>
+        <button class="nav-item" data-od-id="nav-logs" aria-label="Logs"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg><span>Logs</span></button>
+        <button class="nav-item" data-od-id="nav-keys" aria-label="API Keys"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 2 16 7"/><path d="M7 14a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M11 17 14 20l3-3"/></svg><span>API Keys</span></button>
+      </div>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="pill" data-od-id="foot-status" role="status" aria-live="polite">
+        <span class="live-dot" style="width:8px;height:8px" aria-hidden="true"></span>
+        <span><strong>All systems nominal</strong> • 3 providers • 0 open circuits</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;gap:10px">
+        <span style="font-size:12px;color:var(--muted);font-weight:650" id="themeLabel">Theme • Light</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span aria-hidden="true" style="font-size:13px">☀︎</span>
+          <input type="checkbox" class="switch" aria-label="Toggle dark theme" id="themeSwitch">
+          <span aria-hidden="true" style="font-size:13px">◐</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar" data-od-id="topbar">
+      <div class="breadcrumb" aria-label="Breadcrumb">
+        <span class="bc">MiniRouter</span>
+        <span class="bc" aria-hidden="true">/</span>
+        <span class="bc"><strong>Analytics</strong></span>
+        <span class="vsep" aria-hidden="true"></span>
+        <span class="comparison">Improved v2 — same routes, richer observability</span>
+      </div>
+      <div class="topbar-right">
+        <label class="search" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20 16.2 16.2"/></svg>
+          <input id="q" placeholder="Search provider, model, key…" autocomplete="off" />
+        </label>
+        <div class="select" data-od-id="provider-filter">
+          <label for="providerSelect">Provider</label>
+          <select id="providerSelect">
+            <option value="all">All providers</option>
+            <option value="openai-primary">openai-primary</option>
+            <option value="anthropic">anthropic</option>
+            <option value="groq">groq</option>
+          </select>
+        </div>
+        <div class="seg" role="tablist" aria-label="Time range" data-od-id="range">
+          <button role="tab" aria-selected="true" class="active" data-range="24h">24H</button>
+          <button role="tab" aria-selected="false" data-range="7d">7D</button>
+          <button role="tab" aria-selected="false" data-range="30d">30D</button>
+        </div>
+        <button class="btn" id="refreshBtn" data-od-id="btn-refresh" aria-label="Refresh data">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg>
+          Refresh
+        </button>
+        <button class="btn btn-primary" id="exportBtn" data-od-id="btn-export">Export CSV</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-title" data-od-id="page-header">
+        <div>
+          <h1>Router analytics</h1>
+          <p>Provider throughput, latency and estimated cost — refreshed every 30s. Costs are snapshot estimates, not invoiced amounts.</p>
+        </div>
+        <div class="title-actions">
+          <span class="badge" style="display:inline-flex;gap:6px;align-items:center"><span class="live-dot" aria-hidden="true"></span> Live tail</span>
+          <span class="badge badge-muted">Updated just now • :8080</span>
+        </div>
+      </div>
+
+      <div class="compare-banner" data-od-id="compare-banner" role="note">
+        <span style="width:28px;height:28px;border-radius:999px;background:var(--fg);color:white;display:grid;place-items:center;font-size:13px;flex-shrink:0" aria-hidden="true">◆</span>
+        <div style="flex:1;min-width:0">
+          <b>What changed vs the existing dashboard</b>
+          <p>Same coral + warm-paper palette, but higher density: KPIs with trends, time-series with latency overlay, provider health strip, sortable performance table, and model leaderboard — all filterable by provider &amp; time range.</p>
+        </div>
+        <button class="btn" id="toggleCompare" data-od-id="btn-compare">Show legacy layout</button>
+      </div>
+
+      <!-- KPIs -->
+      <section class="kpis" data-od-id="kpis" aria-label="Key metrics">
+        <div class="card kpi" data-od-id="kpi-requests">
+          <div class="kpi-head"><span class="kpi-label">Total requests</span><span class="kpi-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span></div>
+          <div class="kpi-value"><strong id="kpiReq">18,429</strong><small class="up" aria-label="up 12.3 percent">↑ 12.3%</small></div>
+          <div class="kpi-foot"><span>vs previous 24h •</span><b style="color:var(--fg)">1,241 today</b></div>
+          <svg class="spark" viewBox="0 0 120 28" aria-hidden="true"><path d="M0 18 L12 16 L24 20 L36 12 L48 14 L60 8 L72 10 L84 6 L96 9 L110 5 L120 7" stroke="var(--accent)"/></svg>
+        </div>
+        <div class="card kpi" data-od-id="kpi-success">
+          <div class="kpi-head"><span class="kpi-label">Success rate</span><span class="kpi-icon" style="color:var(--success)" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11 12 14l4-5"/><circle cx="12" cy="12" r="9"/></svg></span></div>
+          <div class="kpi-value"><strong>98.4%</strong><small class="down" aria-label="down 0.2 percent">↓ 0.2%</small></div>
+          <div class="kpi-foot"><span>295 failures •</span><b style="color:var(--danger)">3 open retries</b></div>
+          <div class="progress" style="margin-top:10px" role="progressbar" aria-valuenow="98.4" aria-valuemin="0" aria-valuemax="100" aria-label="Success rate"><i style="width:98.4%;background:var(--success)"></i></div>
+        </div>
+        <div class="card kpi" data-od-id="kpi-latency">
+          <div class="kpi-head"><span class="kpi-label">Avg latency</span><span class="kpi-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span></div>
+          <div class="kpi-value"><strong id="kpiLat">187<small style="font-size:14px;color:var(--muted)">ms</small></strong><small class="up">↓ 14ms</small></div>
+          <div class="kpi-foot"><span>p95</span><b>412ms</b> <span>• p50</span><b>132ms</b></div>
+          <div class="mini-bars" aria-hidden="true" id="latBars"></div>
+        </div>
+        <div class="card kpi" data-od-id="kpi-cost">
+          <div class="kpi-head"><span class="kpi-label">Est. cost (30d)</span><span class="kpi-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg></span></div>
+          <div class="kpi-value"><strong>$42.18</strong><small class="up">+$3.10 today</small></div>
+          <div class="kpi-foot"><span>Tokens</span><b>2.41M in / 1.08M out</b> <span class="badge badge-muted" style="margin-left:auto">4 char ≈ 1 tok est.</span></div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="badge badge-soft">Measured $38.92</span><span class="badge badge-muted">Estimated $3.26</span></div>
+        </div>
+      </section>
+
+      <!-- Main chart + Cost -->
+      <section class="grid2" data-od-id="chart-grid">
+        <div class="card" data-od-id="chart-traffic">
+          <div class="panel-header">
+            <h3>Traffic &amp; latency</h3>
+            <div class="panel-actions" role="tablist" aria-label="Chart metric">
+              <button class="tab active" role="tab" aria-selected="true" data-chart="requests">Requests</button>
+              <button class="tab" role="tab" aria-selected="false" data-chart="tokens">Tokens</button>
+              <button class="tab" role="tab" aria-selected="false" data-chart="latency">Latency</button>
+              <span class="badge badge-muted" style="margin-left:2px">per 2h • 24H</span>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <svg id="mainChart" viewBox="0 0 720 200" width="100%" height="200" role="img" aria-label="Traffic and latency over time">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#E56A4A" stop-opacity=".24"/>
+                  <stop offset="100%" stop-color="#E56A4A" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <g id="grid"></g>
+              <path id="areaPath" class="area"></path>
+              <path id="linePath" class="line"></path>
+              <path id="line2Path" class="line2"></path>
+              <g id="dots"></g>
+            </svg>
+          </div>
+          <div class="chart-meta">
+            <span class="legend"><i class="dot" style="background:var(--accent)" aria-hidden="true"></i> <b>Requests</b> <span id="legendReq">1,241</span></span>
+            <span class="legend"><i class="dot" style="background:#111" aria-hidden="true"></i> <b>Latency p50</b> <span id="legendLat">132ms</span></span>
+            <span style="margin-left:auto" class="muted">Filled area = volume • dashed = p50</span>
+          </div>
+        </div>
+
+        <div class="card" data-od-id="panel-cost">
+          <div class="panel-header">
+            <h3>Cost by provider</h3>
+            <button class="btn" style="height:28px;padding:0 10px;font-size:12px" id="costToggle" aria-pressed="false">Share • $</button>
+          </div>
+          <div class="cost-list" id="costList" aria-live="polite"></div>
+          <div style="height:1px;background:var(--border);margin:0 14px" aria-hidden="true"></div>
+          <div class="panel-header" style="border:0;padding-bottom:8px"><h3>Provider health</h3><span class="badge badge-muted">circuit • enabled</span></div>
+          <div class="health-grid" id="healthGrid"></div>
+        </div>
+      </section>
+
+      <!-- Provider table -->
+      <section class="card" data-od-id="section-providers" style="margin-bottom:14px">
+        <div class="panel-header">
+          <h3>Provider performance</h3>
+          <div class="panel-actions">
+            <input class="input" id="tableSearch" placeholder="Filter provider…" style="width:200px;height:32px;border-radius:999px;padding-left:12px" aria-label="Filter providers" />
+            <select id="sortBy" class="select" style="height:32px;border-radius:999px;padding:0 12px" aria-label="Sort providers">
+              <option value="requests">Sort: Requests</option>
+              <option value="cost">Sort: Cost</option>
+              <option value="latency">Sort: Latency</option>
+              <option value="success">Sort: Success</option>
+            </select>
+            <button class="btn" style="height:32px" id="addProviderBtn">Add provider</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table aria-label="Provider performance">
+            <thead>
+              <tr>
+                <th scope="col">Provider</th>
+                <th scope="col">Base URL</th>
+                <th scope="col" style="text-align:right">Requests</th>
+                <th scope="col" style="text-align:right">Tokens in / out</th>
+                <th scope="col" style="text-align:right">Latency p50 / p95</th>
+                <th scope="col">Success</th>
+                <th scope="col">Circuit</th>
+                <th scope="col" style="text-align:right">Est. cost</th>
+                <th scope="col" style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="providerBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyProviders" class="empty" hidden>
+          <b>No providers match your filter</b>
+          <span>Try clearing the search or switching provider filter to “All”.</span>
+          <div style="margin-top:10px"><button class="btn" id="clearFilterBtn">Clear filters</button></div>
+        </div>
+        <div style="padding:10px 14px;display:flex;gap:8px;align-items:center;justify-content:space-between;border-top:1px solid var(--border);background:#FCFCF9;border-radius:0 0 var(--radius-md) var(--radius-md);flex-wrap:wrap">
+          <span class="muted" style="font-size:12px">Pricing is a point-in-time snapshot. Costs are estimates for comparison only.</span>
+          <span class="badge badge-soft">Explicit routing: <span class="mono">providerId/model</span> • no retries</span>
+        </div>
+      </section>
+
+      <section class="grid3" data-od-id="bottom-grid">
+        <div class="card" data-od-id="panel-models">
+          <div class="panel-header"><h3>Top models</h3><span class="badge badge-muted">by tokens</span></div>
+          <div class="model-list" id="modelList"></div>
+        </div>
+        <div class="card" data-od-id="panel-logs">
+          <div class="panel-header">
+            <h3>Recent requests</h3>
+            <div class="panel-actions">
+              <span class="badge badge-soft" style="background:var(--surface-warm)">Stream: 52% • JSON: 48%</span>
+              <button class="btn" style="height:28px" id="viewLogsBtn" aria-label="View all logs">View all →</button>
+            </div>
+          </div>
+          <div class="log-list" id="logList" role="list"></div>
+        </div>
+      </section>
+
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+        <span class="muted" style="font-size:12px">MiniRouter v2 prototype • Native AOT ~34 MB idle • <span class="mono">PORT=8080</span> • Static Svelte SPA served by <span class="mono">UseStaticFiles()</span></span>
+        <span class="badge badge-muted">Built for side-by-side comparison — same routes, richer observability.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer for provider -->
+<div class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Provider detail">
+  <div class="drawer-bg" id="drawerBg" aria-hidden="true"></div>
+  <div class="drawer-panel" role="document">
+    <div style="padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <h3 style="margin:0;font-size:15px;letter-spacing:-.01em">Provider detail</h3>
+      <button class="icon-btn" id="closeDrawer" aria-label="Close dialog"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="rank" id="drawerRank" aria-hidden="true">OP</span>
+        <div style="min-width:0"><div style="font-weight:700" id="drawerTitle">openai-primary</div><div class="muted mono" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="drawerUrl">https://api.openai.com/v1</div></div>
+        <span class="badge badge-live" style="margin-left:auto">Enabled</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card" style="padding:12px"><div class="muted" style="font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:750">Requests (24h)</div><b style="font-size:20px;font-variant-numeric:tabular-nums">9,412</b><div class="muted" style="font-size:12px">↑ 8.2% • 842 today</div></div>
+        <div class="card" style="padding:12px"><div class="muted" style="font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:750">Avg latency</div><b style="font-size:20px;font-variant-numeric:tabular-nums">162ms</b><div class="muted" style="font-size:12px">p95 298ms • p50 118ms</div></div>
+      </div>
+      <div>
+        <label for="drawerBaseUrl" style="font-size:12px;font-weight:700;color:var(--muted)">Base URL</label>
+        <input class="input" id="drawerBaseUrl" value="https://api.openai.com/v1" style="margin-top:6px" />
+      </div>
+      <div>
+        <label for="drawerModel" style="font-size:12px;font-weight:700;color:var(--muted)">Force model (optional)</label>
+        <input class="input" id="drawerModel" placeholder="e.g. gpt-4o-mini" style="margin-top:6px" />
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="flex:1">Test connection</button>
+        <button class="btn btn-primary" style="flex:1">Save changes</button>
+      </div>
+      <div class="card" style="padding:12px;background:var(--warn-soft);border-color:#FDE68A">
+        <div style="font-weight:750;font-size:12px;color:#92400E">Compatibility note</div>
+        <div style="font-size:12px;color:#78350F;margin-top:4px;line-height:1.5">Leave <span class="mono">stream_options</span> enabled unless this provider rejects it. Estimated tokens are marked <span class="mono">estimated=true</span> in logs.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+
+<script>
+const providers = [
+  { id:'openai-primary', name:'OpenAI Primary', baseUrl:'https://api.openai.com/v1', enabled:true, circuit:'closed', requests:9412, tokensIn:1420300, tokensOut:621400, p50:118, p95:298, success:99.1, cost:24.82, est:1.22, color:'#E56A4A' },
+  { id:'anthropic', name:'Anthropic', baseUrl:'https://api.anthropic.com', enabled:true, circuit:'closed', requests:5231, tokensIn:623400, tokensOut:289100, p50:142, p95:412, success:98.2, cost:11.40, est:0.84, color:'#111111' },
+  { id:'groq', name:'Groq Ultra', baseUrl:'https://api.groq.com/openai/v1', enabled:false, circuit:'open', requests:3786, tokensIn:368900, tokensOut:172300, p50:89, p95:510, success:96.4, cost:5.96, est:1.20, color:'#6B7280' },
+];
+
+const models = [
+  { provider:'openai-primary', id:'gpt-4o-mini', tokens: 412300, req: 4211, latency:148 },
+  { provider:'anthropic', id:'claude-3-haiku', tokens: 298100, req: 2899, latency:162 },
+  { provider:'openai-primary', id:'gpt-4o', tokens: 184200, req: 1202, latency:210 },
+  { provider:'groq', id:'llama-3.1-70b', tokens: 121400, req: 998, latency:98 },
+  { provider:'openai-primary', id:'gpt-3.5-turbo', tokens: 67400, req: 612, latency:132 },
+];
+
+const logs = [
+  { time:'14:42:11', provider:'openai-primary', model:'gpt-4o-mini', status:'ok', latency:132, tokens:'18 / 42', msg:'chat.completions — stream true • usage included' },
+  { time:'14:41:58', provider:'anthropic', model:'claude-3-haiku', status:'ok', latency:188, tokens:'24 / 31', msg:'chat.completions — stream_options injected' },
+  { time:'14:41:44', provider:'groq', model:'llama-3.1-70b', status:'fail', latency:2401, tokens:'—', msg:'503 upstream timeout • circuit +1 (2/3)' },
+  { time:'14:41:29', provider:'openai-primary', model:'gpt-4o', status:'ok', latency:412, tokens:'156 / 203 • est', msg:'stream without usage • 4-char estimator' },
+  { time:'14:41:12', provider:'openai-primary', model:'gpt-4o-mini', status:'ok', latency:98, tokens:'12 / 28', msg:'chat.completions — explicit routing ok' },
+  { time:'14:40:55', provider:'anthropic', model:'claude-3-haiku', status:'ok', latency:176, tokens:'31 / 44', msg:'chat.completions — cached models hit' },
+];
+
+function fmt(n){ return new Intl.NumberFormat('en-US').format(n); }
+function money(n){ return '$' + n.toFixed(2); }
+
+function renderCost(){
+  const total = providers.reduce((s,p)=>s+p.cost,0);
+  const list = document.getElementById('costList');
+  list.innerHTML = providers.map(p=>{
+    const pct = Math.round(p.cost/total*100);
+    return `<div class="cost-row">
+      <div class="cost-provider" title="${p.name}">${p.id}</div>
+      <div class="bar-track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${p.id} cost share"><div class="bar-fill" style="width:${pct}%;background:${p.color}"></div></div>
+      <div class="cost-val">${money(p.cost)} <span class="cost-sub">${pct}%</span></div>
+    </div>`;
+  }).join('');
+}
+function renderHealth(){
+  const grid = document.getElementById('healthGrid');
+  grid.innerHTML = providers.map(p=>{
+    const dot = p.enabled ? (p.circuit==='open' ? 'var(--danger)' : 'var(--success)') : '#9CA3AF';
+    const label = !p.enabled ? 'Disabled' : (p.circuit==='open' ? 'Open — 24s cooldown' : 'Closed • healthy');
+    const badge = !p.enabled ? 'badge-muted' : (p.circuit==='open' ? 'badge-open' : 'badge-live');
+    return `<div class="health-card">
+      <span class="health-dot" style="background:${dot}" aria-hidden="true"></span>
+      <div style="flex:1;min-width:0"><b>${p.id}</b><div><span class="badge ${badge}" style="font-size:10px;padding:2px 6px">${label}</span></div></div>
+      <span class="mono" style="font-size:11px;color:var(--muted)">${p.success.toFixed(1)}% ok</span>
+    </div>`;
+  }).join('');
+}
+function renderProviders(){
+  const q = (document.getElementById('tableSearch').value||'').toLowerCase();
+  const sort = document.getElementById('sortBy').value;
+  let rows = providers.filter(p=> !q || p.id.includes(q) || p.name.toLowerCase().includes(q));
+  rows.sort((a,b)=>{
+    if(sort==='cost') return b.cost - a.cost;
+    if(sort==='latency') return a.p50 - b.p50;
+    if(sort==='success') return b.success - a.success;
+    return b.requests - a.requests;
+  });
+  const filterProvider = document.getElementById('providerSelect').value;
+  if(filterProvider!=='all') rows = rows.filter(r=>r.id===filterProvider);
+  const body = document.getElementById('providerBody');
+  const empty = document.getElementById('emptyProviders');
+  const wrap = document.querySelector('.table-wrap');
+  if(rows.length===0){
+    body.innerHTML = '';
+    empty.hidden = false;
+    wrap.style.display='none';
+  } else {
+    empty.hidden = true;
+    wrap.style.display='';
+    body.innerHTML = rows.map(p=>{
+      const latClass = p.p95 < 350 ? 'good' : (p.p95<500 ? 'mid':'bad');
+      const pct = Math.min(100, Math.round(p.requests/100));
+      return `<tr>
+        <td><div class="provider-id"><em style="background:${p.color}" aria-hidden="true"></em> ${p.id}</div><div class="muted" style="font-size:11px">${p.name}</div></td>
+        <td class="mono-cell" title="${p.baseUrl}">${p.baseUrl.replace('https://','')}</td>
+        <td style="text-align:right"><b>${fmt(p.requests)}</b><div class="progress" aria-hidden="true" style="margin-top:6px"><i style="width:${pct}%"></i></div></td>
+        <td style="text-align:right" class="mono-cell">${fmt(p.tokensIn)} / ${fmt(p.tokensOut)}</td>
+        <td style="text-align:right"><span class="lat ${latClass}">${p.p50} / ${p.p95} ms</span></td>
+        <td><span class="badge" style="background:${p.success>98? 'var(--success-soft)':'#FFFBEB'};border-color:${p.success>98?'#A7F3D0':'#FDE68A'};color:${p.success>98?'var(--success)':'var(--warn)'}">${p.success.toFixed(1)}%</span></td>
+        <td><span class="badge ${p.circuit==='open'?'badge-open':'badge-live'}">${p.circuit}</span></td>
+        <td style="text-align:right"><b class="mono">${money(p.cost)}</b><div class="muted" style="font-size:11px">est ${money(p.est)}</div></td>
+        <td style="text-align:right">
+          <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center">
+            <input type="checkbox" class="switch toggle" ${p.enabled?'checked':''} aria-label="Enable ${p.id}" data-toggle="${p.id}">
+            <button class="copy" data-open="${p.id}" aria-label="Open ${p.id} details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 2H7a2 2 0 0 0-2 2v9"/><path d="M9 7h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"/></svg></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  body.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.addEventListener('change', (e)=>{
+      const id=e.target.getAttribute('data-toggle');
+      const p=providers.find(x=>x.id===id);
+      if(p) p.enabled=!p.enabled;
+      renderHealth(); renderProviders(); showToast('Provider ' + id + ' ' + (p.enabled?'enabled':'disabled'));
+    });
+  });
+  body.querySelectorAll('[data-open]').forEach(b=> b.addEventListener('click', ()=> openDrawer(b.getAttribute('data-open'))));
+}
+
+function renderModels(){
+  const list=document.getElementById('modelList');
+  list.innerHTML = models.map((m,i)=>`
+    <div class="model-row" role="listitem">
+      <span class="${i===0?'rank':'rank alt'}" aria-hidden="true">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div class="model-name mono">${m.id}</div>
+        <div class="model-meta">${m.provider} • ${fmt(m.req)} req • avg ${m.latency}ms</div>
+      </div>
+      <div class="model-right"><b class="mono">${fmt(m.tokens)}</b><div class="model-meta">tokens</div></div>
+      <button class="copy" aria-label="Copy ${m.provider}/${m.id}" data-copy="${m.provider}/${m.id}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v3"/></svg></button>
+    </div>
+  `).join('');
+  list.querySelectorAll('[data-copy]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const v=b.getAttribute('data-copy');
+      try{ await navigator.clipboard.writeText(v); showToast('Copied ' + v); } catch{ showToast('Copy failed'); }
+    });
+  });
+}
+function renderLogs(){
+  const list=document.getElementById('logList');
+  list.innerHTML = logs.map(l=>`
+    <div class="log-item" role="listitem">
+      <span class="log-time">${l.time}</span>
+      <div style="min-width:0">
+        <div class="log-provider">${l.provider} <span class="log-model">/ ${l.model}</span> <span class="log-status ${l.status==='ok'?'ok':'fail'}">${l.status==='ok'?'Success':'Failed'}</span></div>
+        <div class="log-msg" title="${l.msg}">${l.msg}</div>
+      </div>
+      <span class="log-lat">${l.latency}ms <span class="muted" style="font-weight:400">• ${l.tokens}</span></span>
+    </div>
+  `).join('');
+}
+function buildChart(mode){
+  const svg=document.getElementById('mainChart');
+  const W=720,H=200, padL=36, padR=16, padT=12, padB=22;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  for(let i=0;i<=4;i++){
+    const y=padT + i*(plotH/4);
+    grid.innerHTML+=`<line x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}" class="gridline"/>`;
+  }
+  const range = document.querySelector('.seg button.active')?.dataset.range || '24h';
+  let points;
+  if(range==='24h'){
+    points = [42,64,58,88,76,102,94,132,118,142,128,155,138,168,152,148,162,178,165,172,180,168,142,120];
+  } else if(range==='7d'){
+    points = [380,420,510,610,580,640,520];
+    const exp=[]; for(let i=0;i<24;i++) exp.push(points[i%7] + (Math.random()*40-20));
+    points=exp;
+  } else {
+    points = Array.from({length:24},(_,i)=> 600 + Math.sin(i/3)*180 + i*8 + (Math.random()*60-30));
+  }
+  let scaleMax = Math.max(...points)*1.15;
+  if(mode==='tokens') scaleMax = Math.max(...points)*9;
+  if(mode==='latency') scaleMax = 520;
+  const toX = i => padL + i*(plotW/(points.length-1));
+  const toY = v => padT + plotH - (v/scaleMax)*plotH;
+  const d = points.map((v,i)=> `${i===0?'M':'L'} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`).join(' ');
+  const areaD = d + ` L ${toX(points.length-1).toFixed(1)} ${padT+plotH} L ${padL} ${padT+plotH} Z`;
+  document.getElementById('areaPath').setAttribute('d', areaD);
+  document.getElementById('linePath').setAttribute('d', d);
+  const lat = points.map((_,i)=> 110 + 50*Math.sin(i/2.4) + (i%3)*12 + 20*Math.random());
+  const latD = lat.map((v,i)=> `${i===0?'M':'L'} ${toX(i).toFixed(1)} ${toY(v* (scaleMax/420)).toFixed(1)}`).join(' ');
+  const l2=document.getElementById('line2Path');
+  l2.setAttribute('d', latD);
+  l2.style.display = mode==='latency' ? 'none' : 'block';
+  const dots=document.getElementById('dots');
+  dots.innerHTML='';
+  points.forEach((v,i)=>{
+    if(i%3!==0) return;
+    const x=toX(i), y=toY(v);
+    dots.innerHTML+=`<circle cx="${x}" cy="${y}" r="3.5" fill="white" stroke="#E56A4A" stroke-width="1.8"/>`;
+  });
+  svg.querySelectorAll('.axis').forEach(e=>e.remove());
+  for(let i=0;i<=4;i++){
+    const val = Math.round(scaleMax - i*(scaleMax/4));
+    const y=padT + i*(plotH/4) + 4;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', padL-6); t.setAttribute('y', y); t.setAttribute('text-anchor','end'); t.setAttribute('class','axis');
+    t.textContent = mode==='latency' ? (val + 'ms') : (val>1000? (val/1000).toFixed(1)+'k' : val);
+    svg.appendChild(t);
+  }
+  const labels = range==='24h' ? ['00:00','06:00','12:00','18:00','Now'] : (range==='7d'? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['W1','W2','W3','W4']);
+  const xStep = plotW/(labels.length-1);
+  labels.forEach((lab,i)=>{
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', padL + i*xStep); t.setAttribute('y', H-4); t.setAttribute('text-anchor', i===0?'start': i===labels.length-1?'end':'middle'); t.setAttribute('class','axis');
+    t.textContent=lab; svg.appendChild(t);
+  });
+}
+
+function renderLatBars(){
+  const el=document.getElementById('latBars');
+  const vals=[18,26,22,34,28,38,32,42,36,44,30,40];
+  el.innerHTML = vals.map(v=> `<i style="height:${v}px;background:${v>36?'var(--accent)':'#E5E7EB'}" aria-hidden="true"></i>`).join('');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.hidden=false;
+  requestAnimationFrame(()=>{ t.style.opacity='1'; t.style.transform='translateY(0)'; });
+  clearTimeout(t._tm); t._tm=setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(8px)'; setTimeout(()=> t.hidden=true, 220); }, 2200);
+}
+
+let lastFocus=null;
+function openDrawer(id){
+  const p=providers.find(x=>x.id===id);
+  if(!p) return;
+  lastFocus=document.activeElement;
+  document.getElementById('drawerTitle').textContent=p.id;
+  document.getElementById('drawerUrl').textContent=p.baseUrl;
+  document.getElementById('drawerBaseUrl').value=p.baseUrl;
+  document.getElementById('drawerRank').textContent=p.id.slice(0,2).toUpperCase();
+  const d=document.getElementById('drawer');
+  d.classList.add('open');
+  d.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  setTimeout(()=> document.getElementById('closeDrawer').focus(), 30);
+}
+function closeDrawer(){
+  const d=document.getElementById('drawer');
+  d.classList.remove('open');
+  d.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+  if(lastFocus) lastFocus.focus();
+}
+
+// init
+renderCost(); renderHealth(); renderProviders(); renderModels(); renderLogs(); renderLatBars(); buildChart('requests');
+
+// interactions
+document.querySelectorAll('.seg button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.seg button').forEach(x=>{ x.classList.remove('active'); x.setAttribute('aria-selected','false'); });
+    b.classList.add('active'); b.setAttribute('aria-selected','true');
+    const mode = document.querySelector('.tab.active')?.dataset.chart || 'requests';
+    buildChart(mode);
+    const reqEl=document.getElementById('kpiReq');
+    const latEl=document.getElementById('kpiLat');
+    if(b.dataset.range==='7d'){ reqEl.textContent='94,210'; latEl.innerHTML='198<small style="font-size:14px;color:var(--muted)">ms</small>'; }
+    else if(b.dataset.range==='30d'){ reqEl.textContent='412,880'; latEl.innerHTML='203<small style="font-size:14px;color:var(--muted)">ms</small>'; }
+    else { reqEl.textContent='18,429'; latEl.innerHTML='187<small style="font-size:14px;color:var(--muted)">ms</small>'; }
+  });
+});
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>{ x.classList.remove('active'); x.setAttribute('aria-selected','false'); });
+    t.classList.add('active'); t.setAttribute('aria-selected','true');
+    buildChart(t.dataset.chart);
+  });
+});
+document.getElementById('tableSearch').addEventListener('input', renderProviders);
+document.getElementById('sortBy').addEventListener('change', renderProviders);
+document.getElementById('providerSelect').addEventListener('change', renderProviders);
+document.getElementById('q').addEventListener('input', (e)=>{
+  const v=e.target.value.toLowerCase();
+  document.getElementById('tableSearch').value=v;
+  renderProviders();
+});
+document.getElementById('clearFilterBtn').addEventListener('click', ()=>{
+  document.getElementById('tableSearch').value='';
+  document.getElementById('providerSelect').value='all';
+  document.getElementById('q').value='';
+  renderProviders();
+});
+document.getElementById('refreshBtn').addEventListener('click', ()=>{
+  const btn=document.getElementById('refreshBtn');
+  const orig=btn.innerHTML;
+  btn.disabled=true; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg> Refreshing…';
+  setTimeout(()=>{
+    buildChart(document.querySelector('.tab.active')?.dataset.chart||'requests');
+    renderProviders();
+    btn.disabled=false; btn.innerHTML=orig;
+    showToast('Refreshed • 30s auto-refresh');
+  }, 480);
+});
+document.getElementById('costToggle').addEventListener('click', (e)=>{
+  const list=document.getElementById('costList');
+  const btn=e.currentTarget;
+  const isShare = btn.textContent.includes('Share');
+  btn.setAttribute('aria-pressed', String(isShare));
+  if(isShare){
+    btn.textContent='Tokens';
+    list.innerHTML = providers.map(p=>`
+      <div class="cost-row">
+        <div class="cost-provider">${p.id}</div>
+        <div class="bar-track" role="progressbar" aria-valuenow="${Math.round(p.tokensIn/20000)}" aria-valuemin="0" aria-valuemax="100" aria-label="${p.id} tokens"><div class="bar-fill" style="width:${Math.round(p.tokensIn/20000)}%;background:${p.color}"></div></div>
+        <div class="cost-val">${fmt(p.tokensIn+p.tokensOut)} <span class="cost-sub">tok</span></div>
+      </div>
+    `).join('');
+  } else {
+    btn.textContent='Share • $';
+    renderCost();
+  }
+});
+document.getElementById('exportBtn').addEventListener('click', ()=> showToast('Export started • analytics_24h.csv'));
+document.getElementById('viewLogsBtn').addEventListener('click', ()=> showToast('Opening Logs…'));
+document.getElementById('addProviderBtn').addEventListener('click', ()=> openDrawer('openai-primary'));
+document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
+document.getElementById('drawerBg').addEventListener('click', closeDrawer);
+document.getElementById('toggleCompare').addEventListener('click', (e)=>{
+  const b=document.querySelector('.compare-banner');
+  const isLegacy = e.currentTarget.textContent.includes('legacy');
+  if(isLegacy){
+    e.currentTarget.textContent='Show improved v2';
+    b.style.background='#FFF1E8';
+    showToast('Switched to legacy card grid (original Analytics)');
+  } else {
+    e.currentTarget.textContent='Show legacy layout';
+    b.style.background='var(--surface-warm)';
+    showToast('Back to improved v2');
+  }
+});
+const themeSwitch=document.getElementById('themeSwitch');
+const themeLabel=document.getElementById('themeLabel');
+function applyTheme(isDark){
+  document.documentElement.classList.toggle('dark', isDark);
+  if(themeLabel) themeLabel.textContent = isDark ? 'Theme • Dark' : 'Theme • Light';
+  themeSwitch.setAttribute('aria-checked', String(isDark));
+  try{ localStorage.setItem('minirouter-theme', isDark ? 'dark':'light'); }catch{}
+}
+themeSwitch.addEventListener('change', (e)=> applyTheme(e.target.checked));
+// restore preference
+try{
+  const saved=localStorage.getItem('minirouter-theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const startDark = saved ? saved==='dark' : prefersDark;
+  if(startDark){ themeSwitch.checked=true; applyTheme(true); }
+}catch{}
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
+</script>
+</body>
+</html>

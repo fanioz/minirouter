@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="80" viewBox="0 0 360 80" role="img" aria-label="Provider color pins">
+  <rect width="360" height="80" rx="12" fill="#FDFAF6" stroke="#E5E7EB"/>
+  <circle cx="48" cy="32" r="8" fill="#E56A4A"/><text x="48" y="56" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#2B2B2B">openai-primary</text>
+  <circle cx="180" cy="32" r="8" fill="#111111"/><text x="180" y="56" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#2B2B2B">anthropic</text>
+  <circle cx="312" cy="32" r="8" fill="#6B7280"/><text x="312" y="56" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#2B2B2B">groq</text>
+</svg>

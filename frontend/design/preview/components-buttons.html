@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Components — Buttons & Inputs — MiniRouter</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{padding:24px;max-width:980px;margin:0 auto}
+  h1{font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-card);margin-bottom:14px}
+  .ch{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .ch h3{margin:0;font-size:13.5px;letter-spacing:-.01em}
+  .body{padding:14px 16px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  /* mirror source btn */
+  .btn{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:650;display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;transition:all 160ms cubic-bezier(0.2,0,0,1)}
+  .btn:hover{border-color:#D1D5DB;background:#FCFCF9}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:white}
+  .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+  .tab{height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:650;color:var(--muted);cursor:pointer}
+  .tab.active{background:var(--fg);color:white;border-color:var(--fg)}
+  .seg{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:999px;display:inline-flex;align-items:center;padding:3px;gap:2px}
+  .seg button{height:28px;padding:0 12px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);font-size:13px;font-weight:650;cursor:pointer}
+  .seg button.active{background:var(--fg);color:white;border-color:var(--fg)}
+  .input{height:36px;border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:0 11px;font-size:13px;width:200px;outline:none}
+  .input:focus{border-color:var(--accent);box-shadow:var(--focus-ring)}
+  .icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:transparent;display:grid;place-items:center;color:var(--muted);cursor:pointer}
+  .icon-btn:hover{background:var(--accent-soft);border-color:var(--border);color:var(--fg)}
+  .badge{font-size:11px;font-weight:750;letter-spacing:.02em;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;gap:6px}
+  .badge-live{background:var(--success);color:white;border-color:var(--success)}
+  .badge-muted{background:#F3F4F6;color:var(--muted);border-color:#E5E7EB}
+  .label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--meta)}
+  .switch{appearance:none;width:36px;height:22px;border-radius:999px;background:#E5E7EB;position:relative;cursor:pointer}
+  .switch:checked{background:var(--accent)}
+  .switch:before{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:white;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.16);transition:transform 160ms cubic-bezier(0.2,0,0,1)}
+  .switch:checked:before{transform:translateX(14px)}
+</style>
+</head>
+<body>
+<h1>Components — Buttons & Inputs</h1>
+<p class="sub">Pill controls are the system signature. One primary per viewport (coral); everything else is ghost → ink. Focus ring is <code>0 0 0 3px var(--accent-ring)</code>.</p>
+
+<div class="card">
+  <div class="ch"><h3>Buttons — ghost → primary → disabled</h3><span class="label">36h · 999px · 13/650</span></div>
+  <div class="body row">
+    <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg> Refresh</button>
+    <button class="btn">Show legacy layout</button>
+    <button class="btn btn-primary">Export CSV</button>
+    <button class="btn" disabled>Disabled</button>
+    <span class="badge badge-live">● Live</span>
+    <span class="badge badge-muted">Updated just now</span>
+  </div>
+  <div class="body" style="padding-top:0;font-size:12px;color:var(--muted)">Hover: <code>border #D1D5DB bg #FCFCF9</code> · Primary hover <code>#CC5535</code> · Active <code>translateY(1px)</code> · Never lower text contrast on hover.</div>
+</div>
+
+<div class="card">
+  <div class="ch"><h3>Tabs & Segmented</h3><span class="label">28h pill · ink active</span></div>
+  <div class="body row">
+    <button class="tab active">Requests</button>
+    <button class="tab">Tokens</button>
+    <button class="tab">Latency</button>
+    <div class="seg"><button class="active">24H</button><button>7D</button><button>30D</button></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch"><h3>Inputs & Switches</h3><span class="label">10px radius (only) · focus accent</span></div>
+  <div class="body row">
+    <input class="input" placeholder="Search provider, model, key…">
+    <input class="input" placeholder="Filter provider…" style="width:160px;border-radius:999px">
+    <span class="label" style="display:inline-flex;align-items:center;gap:8px">Theme <input type="checkbox" class="switch" checked> Dark</span>
+    <button class="icon-btn" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+  </div>
+  <div class="body" style="padding-top:0;font-size:12px;color:var(--muted)">Search is pill (999px); plain inputs are 10px — the single exception. Switch track <code>#E5E7EB→accent</code>.</div>
+</div>
+
+<div class="card">
+  <div class="ch"><h3>Interaction states</h3></div>
+  <div class="body row">
+    <span class="badge" style="background:var(--fg);color:white;border-color:var(--fg)">nav active — ink fill</span>
+    <span style="padding:6px 12px;border-radius:10px;border:1px solid transparent;background:#F9F5F1;color:var(--fg);font-size:13px;font-weight:500">hover — #F9F5F1</span>
+    <span style="padding:6px 12px;border-radius:999px;background:var(--surface);border:2px solid var(--accent);box-shadow:var(--focus-ring);font-size:12px">focus ring</span>
+    <span style="width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid var(--border);background:var(--surface-warm)">◆</span>
+  </div>
+</div>
+</body>
+</html>
