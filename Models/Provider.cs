@@ -109,6 +109,14 @@ public class AggregatedModels
 [JsonSerializable(typeof(List<MiniRouter.Services.Presets.PresetInfo>))]
 [JsonSerializable(typeof(MiniRouter.Services.Presets.EnablePresetRequest))]
 [JsonSerializable(typeof(List<string>))]
+[JsonSerializable(typeof(OpenAiModelEntry))]
+[JsonSerializable(typeof(List<OpenAiModelEntry>))]
+[JsonSerializable(typeof(OpenAiModelList))]
+[JsonSerializable(typeof(AuthPassthroughConfig))]
+[JsonSerializable(typeof(ModelChain))]
+[JsonSerializable(typeof(List<ModelChain>), TypeInfoPropertyName = "ModelChainList")]
+[JsonSerializable(typeof(CreateModelChainDto))]
+[JsonSerializable(typeof(UpdateModelChainDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }
@@ -251,3 +259,10 @@ public record ChatCompletionCreateRequest(
 
 public record ToolParam(string Type, FunctionParam Function);
 
+
+// Story 10.1: OpenAI-format /v1/models response types (AOT-safe named records)
+public record OpenAiModelEntry(string Id, string Object, string OwnedBy);
+public record OpenAiModelList(string Object, List<OpenAiModelEntry> Data);
+
+// Story 10.1: Auth passthrough config response
+public record AuthPassthroughConfig(bool Enabled);

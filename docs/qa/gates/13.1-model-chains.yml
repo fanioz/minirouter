@@ -1,0 +1,117 @@
+schema: 1
+story: "13.1"
+story_title: "Model Chains (Named Fallback Sequences)"
+gate: CONCERNS
+status_reason: >
+  All 11 acceptance criteria are fully implemented and verified. dotnet build clean,
+  117/117 tests pass, frontend build clean. Two low-severity thread-safety issues in
+  UpdateChainAsync (TOCTOU between lock acquisitions, and unlocked read on return)
+  and two minor frontend code-quality issues (wrong lucide package import, unused
+  Dialog import) are flagged as CONCERNS — none block correctness under normal
+  operator usage.
+reviewer: "Quinn (Test Architect)"
+reviewed_revision: "0a6baf11efc0ccf02e75ff91b0e9aacbe2e4562c"
+updated: "2026-09-01T00:00:00Z"
+
+quality_score: 88
+
+expires: "2026-09-15T00:00:00Z"
+
+top_issues:
+  - id: C1
+    severity: medium
+    title: "UpdateChainAsync — TOCTOU between two RWLS write-lock acquisitions"
+    file: "Services/ModelChainService.cs"
+    description: >
+      UpdateChainAsync acquires a write lock to find the index, releases it,
+      validates, then re-acquires a write lock to update _chains[index]. A
+      concurrent DeleteChainAsync between the two lock windows could shift
+      list indices, silently updating the wrong entry or throwing
+      InvalidOperationException on the unlocked return-path read
+      (`_chains.First(...)`). Probability is very low (operator-only, small list)
+      but the pattern diverges from the safer single-lock approach used elsewhere.
+    suggested_owner: dev
+
+  - id: C2
+    severity: low
+    title: "ModelChains.svelte imports from 'lucide-svelte' instead of '@lucide/svelte'"
+    file: "frontend/src/ModelChains.svelte"
+    description: >
+      Every other component in the project imports from '@lucide/svelte'. ModelChains.svelte
+      imports from 'lucide-svelte' (legacy v1). Both packages resolve correctly and the
+      build is clean, but it introduces a dual-package footprint and inconsistency.
+    suggested_owner: dev
+
+  - id: C3
+    severity: low
+    title: "Unused Dialog import in ModelChains.svelte"
+    file: "frontend/src/ModelChains.svelte"
+    description: >
+      `import * as Dialog from '$lib/components/ui/dialog'` is imported but never
+      referenced in the template — dev replaced Dialog with custom modal HTML.
+      Tree-shaken by Vite so no bundle impact, but dead import adds noise.
+    suggested_owner: dev
+
+evidence:
+  tests_reviewed: 117
+  new_tests_added: 15
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >
+      All 4 CRUD endpoints gated by ApiKeyEndpointFilter. Input validated:
+      name must be non-empty and slash-free; model targets must contain exactly one
+      slash. No SQL surface (file-based JSON). No secrets in chain data. Chain name
+      length not bounded (LOW, operator-only interface).
+  performance:
+    status: PASS
+    notes: >
+      GetChain()/IsChain() called on every proxied request — O(n) over a list
+      typically <20 chains. Negligible. Cache invalidation on all CRUD writes
+      keeps /v1/models fresh. PersistAsync uses durable flush — acceptable for
+      infrequent operator writes.
+  reliability:
+    status: PASS
+    notes: >
+      Atomic write via temp+rename. LoadChainsAsync handles missing file, empty
+      file, and corrupt JSON gracefully (empty list + log). Stale .tmp cleanup
+      at startup. Circuit breaker keys on real provider/model coordinates,
+      never the chain name alias.
+  maintainability:
+    status: CONCERNS
+    notes: >
+      lucide-svelte vs @lucide/svelte inconsistency (C2). Unused Dialog import
+      (C3). ModelChain.ValidateTargets() helper on the record is not used by the
+      service — parallel validation logic. Minor duplication, no correctness
+      impact.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >
+        Consolidate UpdateChainAsync into a single write-lock window: find the index,
+        validate, and replace within one EnterWriteLock/ExitWriteLock block. Use the
+        returned updated chain from inside the lock for the return value instead of
+        a post-lock _chains.First() call.
+      refs: ["Services/ModelChainService.cs"]
+
+    - action: >
+        Migrate ModelChains.svelte icon imports from 'lucide-svelte' to '@lucide/svelte'
+        and remove the unused Dialog import.
+      refs: ["frontend/src/ModelChains.svelte"]
+
+    - action: >
+        Add a [Collection("ModelChainTests")] xUnit collection attribute to
+        ModelChainServiceTests to prevent env-var mutation flakiness if test
+        parallelism settings change.
+      refs: ["Tests/ModelChainServiceTests.cs"]
+
+    - action: >
+        Add a test verifying chain names appear in GET /v1/models with owned_by == 'chain'.
+        Extend ModelsEndpointTests to cover the story 13.1 integration path.
+      refs: ["Tests/ModelsEndpointTests.cs"]

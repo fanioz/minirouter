@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Colors — Primary — MiniRouter</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{padding:24px;max-width:1080px;margin:0 auto}
+  h1{font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .swatch{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-card)}
+  .swatch-top{height:86px;display:grid;place-items:center;font-weight:700;letter-spacing:-.01em}
+  .swatch-body{padding:12px 14px}
+  .swatch-body b{font-size:13px}
+  .swatch-body div{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-top:2px}
+  .row{display:flex;gap:8px;align-items:center;margin-top:18px;flex-wrap:wrap}
+  .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:650}
+  .toggle{display:inline-flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px 6px 4px 10px}
+  .toggle button{border:0;background:transparent;padding:6px 12px;border-radius:999px;cursor:pointer;font-weight:650;font-size:12px;color:var(--muted)}
+  .toggle button.active{background:var(--fg);color:white}
+  @media(max-width:760px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<h1>Colors — Primary</h1>
+<p class="sub">Warm paper + ink + single coral accent. Light / Dark toggle exercises the <code>html.dark</code> remap. Source: <code>:root</code> in <code>minirouter-analytics-v2.html</code>.</p>
+
+<div class="row" style="justify-content:space-between">
+  <span class="pill">◈ MiniRouter • `--bg #FDFAF6` → `0f0f0f` dark</span>
+  <label class="toggle">Theme <input type="checkbox" id="themeSwitch" class="switch" style="margin-left:6px"><span aria-hidden="true" style="font-size:12px;margin-left:6px">Dark</span></label>
+</div>
+
+<div class="grid" style="margin-top:16px">
+  <div class="swatch"><div class="swatch-top" style="background:var(--bg);color:var(--fg);border-bottom:1px solid var(--border-soft)">FDFAF6 • bg</div><div class="swatch-body"><b>Canvas — Warm Paper</b><div>--bg #FDFAF6 · oklch 98.2% 0.015 55 · dark #0f0f0f</div></div></div>
+  <div class="swatch"><div class="swatch-top" style="background:var(--surface);color:var(--fg);border-bottom:1px solid var(--border)">ffffff • surface</div><div class="swatch-body"><b>Surface</b><div>--surface #ffffff · cards / sidebar / inputs</div></div></div>
+  <div class="swatch"><div class="swatch-top" style="background:var(--surface-warm);color:var(--fg);border-bottom:1px solid var(--border)">FFF7F2 • warm</div><div class="swatch-body"><b>Warm Surface</b><div>--surface-warm #FFF7F2 · pills / soft badges</div></div></div>
+
+  <div class="swatch"><div class="swatch-top" style="background:var(--fg);color:white">111111 • fg</div><div class="swatch-body"><b>Ink — Primary Text</b><div>--fg #111111 · nav active / headings</div></div></div>
+  <div class="swatch"><div class="swatch-top" style="background:var(--accent);color:white">E56A4A • accent</div><div class="swatch-body"><b>Coral — Single Accent</b><div>--accent #E56A4A · CTA / chart / sparkline · hover #CC5535 · active #B74C2F</div></div></div>
+  <div class="swatch"><div class="swatch-top" style="background:var(--border);color:var(--fg)">E5E7EB • border</div><div class="swatch-body"><b>Border</b><div>--border #E5E7EB · card stroke · soft #F0EDE9 divider</div></div></div>
+</div>
+
+<div class="grid" style="margin-top:14px">
+  <div class="swatch"><div class="swatch-top" style="background:var(--accent-soft);color:var(--accent);border-bottom:1px solid var(--border)">Accent soft · 10%</div><div class="swatch-body"><b>Accent Soft</b><div>rgba(229,106,74,.10) · icon-btn hover</div></div></div>
+  <div class="swatch"><div class="swatch-top" style="background:var(--surface);border:2px solid var(--accent);color:var(--accent)">Focus ring</div><div class="swatch-body"><b>Accent Ring</b><div>rgba(229,106,74,.22) · 0 0 0 3px · focus-visible</div></div></div>
+  <div class="swatch" style="display:grid;place-items:center;padding:12px"><img src="../assets/wordmark.svg" alt="MiniRouter wordmark" style="width:200px;height:auto;border-radius:10px;box-shadow:var(--shadow-card)"><div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:8px">assets/wordmark.svg — preserved mark</div></div>
+</div>
+
+<div style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px">
+  <div style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--meta)">Provider pins</div>
+  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+    <span class="pill" style="display:inline-flex;gap:8px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:#E56A4A;display:inline-block"></span> openai-primary #E56A4A</span>
+    <span class="pill" style="display:inline-flex;gap:8px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:#111111;display:inline-block"></span> anthropic #111111</span>
+    <span class="pill" style="display:inline-flex;gap:8px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:#6B7280;display:inline-block"></span> groq #6B7280</span>
+    <img src="../assets/provider-dots.svg" alt="Provider dots" style="height:36px;border-radius:8px;border:1px solid var(--border)">
+  </div>
+</div>
+
+<script>
+const sw=document.getElementById('themeSwitch');
+function apply(d){ document.documentElement.classList.toggle('dark',d); }
+sw.addEventListener('change',e=>apply(e.target.checked));
+try{ if(window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches){ sw.checked=true; apply(true);} }catch{}
+</script>
+</body>
+</html>

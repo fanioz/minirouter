@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 2,
+  "fileName": "preview/typography-specimens.html",
+  "currentVersionId": "bd2688d1-57cb-42b7-8b1b-ef9e30587437",
+  "entries": [
+    {
+      "id": "bd2688d1-57cb-42b7-8b1b-ef9e30587437",
+      "fileName": "preview/typography-specimens.html",
+      "version": 1,
+      "label": "Version 1",
+      "createdAt": 1787901127590,
+      "source": "ai",
+      "prompt": "Create this project as a complete Open Design design system workspace.\nAutonomy requirement:\n- Do not ask setup or clarification questions during design-system generation.\n- Do not emit `<question-form>`, \"Quick brief — 30 seconds\", direction cards, choice cards, or any UI that waits for user input.\n- The source project already contains the evidence. Choose sensible defaults where details are missing and begin generating the design-system artifacts immediately.\nSource project handoff:\n- Source project id: 6a3e0d06-47c7-41fe-848c-3ce0ad840746\n- Source project name: Web Prototype\n- Active design system id: default\n- Active design system title: Neutral Modern\n- Read `context/source-context.md` first. It lists the copied project files and original project metadata.\n- Treat every copied file, uploaded asset, reference image, browser snapshot, sketch, generated artifact, and context note in this workspace as design-system evidence.\n- Use the copied project outputs to infer real visual language, components, layout, interaction patterns, copy tone, tokens, typography, spacing, assets, and anti-patterns.\n- Do not create another project or another design-system id. Update this new design-system project in place.\nSource project metadata:\n```json\n{\n  \"kind\": \"prototype\",\n  \"nameSource\": \"prompt\",\n  \"linkedDirs\": [\n    \"/Users/fanioz/code/dotnet/minirouter\"\n  ],\n  \"examplePrompt\": true,\n  \"examplePromptTitle\": \"Dashboard\",\n  \"examplePromptBrief\": {\n    \"artifact_type\": \"web prototype\",\n    \"audience\": \"product evaluators\",\n    \"fidelity\": \"high-fidelity\"\n  },\n  \"localCatalogScopes\": {\n    \"designSystem\": {\n      \"workspaceId\": \"mgjnrs8rbraanenvzykcbxxg\",\n      \"workspaceMemberId\": \"mnaqiviujs9nv50t1dry3ke1\"\n    }\n  }\n}\n```\nVisible copied files to inspect:\n  - minirouter-analytics-v2.html (64KB)\nExpected output:\n- A clear `DESIGN.md` with product context, visual foundations, color, type, spacing, layout, components, motion, voice, and anti-patterns.\n- A reusable package: `README.md`, `SKILL.md`, `colors_and_type.css`, provenance notes, `assets/`, `build/` when runtime icons exist, optional `fonts/`, focused `preview/` cards, preserved source examples, and `ui_kits/app/`.\n- Preserve real source assets when evidence provides them: logos, app icons, tray icons, avatars, wordmarks, imagery, and font files belong in `assets/`, `build/`, or `fonts/`, not only in prose.\n- Preserve high-signal source/component examples outside `context/` when copied files include substantial implementation or artifact code. Do not replace them with tiny stubs.\n- Split review previews into focused cards for colors, typography, spacing, radius/shadows, components, brand assets, and applied UI surfaces. Preview cards must visibly load preserved files when available.\n- Build `ui_kits/app/` as an applied interface kit that reflects the source project, with an index page and component files when the evidence supports them. Do not leave it as a generic static mock.\n- Keep `README.md`, `SKILL.md`, `DESIGN.md`, preview manifest text, and `ui_kits/app/README.md` synchronized with the final file structure.\nCompletion gate:\n- Finish only after the project contains reviewable design-system artifacts and the right-side Design System tab can inspect them.\n- Before your final response, run `\"$OD_NODE_BIN\" \"$OD_BIN\" tools connectors design-system-package-audit --path . --fail-on-warnings`.\n- Fix every audit error and design-quality warning. If an issue cannot be fixed because source evidence is missing, explain that blocker instead of claiming the design system is ready.\nWhen finished, summarize the generated files and name the first previews reviewers should inspect.",
+      "size": 5183,
+      "mime": "text/html; charset=utf-8",
+      "kind": "html",
+      "contentPath": "0001-bd2688d1-57cb-42b7-8b1b-ef9e30587437.html",
+      "contentDigest": "f7708056df3e629c29e25bd84920ce6b152b4b63361bf78393a6ca25bdaa16a2",
+      "promptSource": "message"
+    }
+  ]
+}

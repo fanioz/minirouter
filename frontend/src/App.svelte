@@ -1,29 +1,37 @@
 <script>
   import { ModeWatcher, setMode, userPrefersMode } from 'mode-watcher';
+  import { onMount } from 'svelte';
   import Providers from './Providers.svelte';
   import Presets from './Presets.svelte';
   import Models from './Models.svelte';
   import Home from './Home.svelte';
   import ApiKey from './ApiKey.svelte';
+  import CliTool from './CliTool.svelte';
   import Logs from './Logs.svelte';
   import Analytics from './Analytics.svelte';
   import Playground from './Playground.svelte';
+  import Integrations from './Integrations.svelte';
+  import ModelChains from './ModelChains.svelte';
   import { Toaster } from '$lib/components/ui/sonner';
   import {
     PanelLeft, LayoutDashboard, Settings, Box, Key, ScrollText,
-    BarChart3, MessageSquare, Sun, Moon, Monitor, LayoutGrid
+    BarChart3, MessageSquare, Sun, Moon, Monitor, LayoutGrid, SquareTerminal, Plug, Link2
   } from '@lucide/svelte';
+  import { route, navigate, DEFAULT_ROUTE, parseHash } from '$lib/router.js';
+  import { loadNav, saveNav, DEFAULTS } from '$lib/persist.js';
 
-  let activeTab = $state('home');
-  let isSidebarCollapsed = $state(false);
-
-  // Design system §5.3: two nav groups — Operate & Observe
+  // Design system §5.3: two nav groups — Operate & Observe.
+  // Story dashboard-navigation.1.1 (@po decision #1) keeps this two-group
+  // structure and routes ALL 8 existing tabs through the new hash scheme.
   const operateTabs = [
     { id: 'home', label: 'Home', icon: LayoutDashboard },
     { id: 'providers', label: 'Providers', icon: Settings },
     { id: 'presets', label: 'Presets', icon: LayoutGrid },
     { id: 'models', label: 'Models', icon: Box },
-    { id: 'playground', label: 'Playground', icon: MessageSquare }
+    { id: 'chains', label: 'Chains', icon: Link2 },
+    { id: 'playground', label: 'Playground', icon: MessageSquare },
+    { id: 'clitool', label: 'CLI Tool', icon: SquareTerminal },
+    { id: 'integrations', label: 'Integrations', icon: Plug }
   ];
   const observeTabs = [
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -31,6 +39,11 @@
     { id: 'apikey', label: 'API Keys', icon: Key }
   ];
   const allTabs = [...operateTabs, ...observeTabs];
+
+  // Story dashboard-navigation.1.1: sidebar collapsed + active route are
+  // sourced from the new router/persist layer instead of bare $state.
+  let isSidebarCollapsed = $state(DEFAULTS.collapsed);
+  let activeTab = $state(DEFAULT_ROUTE);
   let activeLabel = $derived(allTabs.find(t => t.id === activeTab)?.label ?? 'Home');
 
   const themeModes = ['system', 'light', 'dark'];
@@ -41,6 +54,11 @@
   let ThemeIcon = $derived(themeIcons[currentThemeMode]);
   let themeLabel = $derived(themeLabels[currentThemeMode]);
 
+  function selectTab(id) {
+    if (id === activeTab) return;
+    navigate(id); // updates hash; route store subscribes and syncs activeTab
+  }
+
   function toggleSidebar() {
     isSidebarCollapsed = !isSidebarCollapsed;
   }
@@ -50,15 +68,47 @@
     const next = themeModes[(idx + 1) % themeModes.length];
     setMode(next);
   }
+
+  // Boot: restore persisted state, then start following the route store.
+  onMount(() => {
+    const saved = loadNav();
+
+    // Restore collapsed state.
+    isSidebarCollapsed = Boolean(saved.collapsed);
+
+    // If the URL has no hash yet, prefer the saved route, then fall back
+    // to DEFAULT_ROUTE. This implements AC #8: no prior preference -> home,
+    // but also AC #7: persisted route wins on reload.
+    const hashRoute = parseHash(window.location.hash);
+    if (hashRoute !== DEFAULT_ROUTE) {
+      activeTab = hashRoute;
+    } else if (saved.route && saved.route !== DEFAULT_ROUTE) {
+      navigate(saved.route);
+      activeTab = saved.route;
+    } else {
+      activeTab = DEFAULT_ROUTE;
+    }
+
+    // Subscribe to route changes (back/forward, deep link, programmatic nav).
+    const unsub = route.subscribe((r) => {
+      activeTab = r;
+    });
+    return unsub;
+  });
+
+  // Persist on any change to collapsed or activeTab (derived effect).
+  $effect(() => {
+    saveNav({ collapsed: isSidebarCollapsed, route: activeTab });
+  });
 </script>
 
 <ModeWatcher />
 
 <div class="flex min-h-screen w-full bg-background text-foreground">
-  <!-- Sidebar — 268px sticky, surface, 1px stroke -->
+  <!-- Sidebar — 268px sticky (collapsed 64px), surface, 1px stroke -->
   <aside
     class="sticky top-0 hidden h-screen shrink-0 flex-col bg-card transition-all duration-300 ease-in-out min-[860px]:flex"
-    style="width: {isSidebarCollapsed ? '64px' : 'var(--sidebar-w)'}; border-right: 1px solid var(--border);"
+    style="width: {isSidebarCollapsed ? '64px' : 'var(--sidebar-w)'}; border-right: 1px solid var(--border); transition-duration: var(--motion-base);"
   >
     <!-- Brand head — 64px -->
     <div class="flex h-16 shrink-0 items-center gap-2.5" style="border-bottom: 1px solid var(--border); padding: 0 {isSidebarCollapsed ? '12px' : '16px'};">
@@ -97,7 +147,7 @@
                    ? 'border-foreground bg-foreground text-background'
                    : 'text-muted-foreground hover:bg-nav-hover hover:text-foreground'}
                  {isSidebarCollapsed ? 'justify-center px-0' : 'px-2.5 text-left'}"
-          onclick={() => activeTab = tab.id}
+          onclick={() => selectTab(tab.id)}
           title={isSidebarCollapsed ? tab.label : ''}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >
@@ -121,7 +171,7 @@
                    ? 'border-foreground bg-foreground text-background'
                    : 'text-muted-foreground hover:bg-nav-hover hover:text-foreground'}
                  {isSidebarCollapsed ? 'justify-center px-0' : 'px-2.5 text-left'}"
-          onclick={() => activeTab = tab.id}
+          onclick={() => selectTab(tab.id)}
           title={isSidebarCollapsed ? tab.label : ''}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >
@@ -191,7 +241,7 @@
         <button
           class="h-7 shrink-0 rounded-full px-3 text-xs font-semibold transition-all"
           style="border: 1px solid {activeTab === tab.id ? 'var(--fg)' : 'var(--border)'}; background: {activeTab === tab.id ? 'var(--fg)' : 'var(--surface)'}; color: {activeTab === tab.id ? 'var(--bg)' : 'var(--muted)'};"
-          onclick={() => activeTab = tab.id}
+          onclick={() => selectTab(tab.id)}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >
           {tab.label}
@@ -199,25 +249,35 @@
       {/each}
     </nav>
 
-    <!-- Content — max 1360px centered, per §5.1 -->
+    <!-- Content — max 1360px centered, per §5.1.
+         Story dashboard-navigation.1.1: Providers renders a placeholder
+         (the real table moves in Wave 2). Home / API Key / Logs / Presets
+         / Models / Analytics / Playground keep their existing components
+         as a transitional backstop (@po decision #1). -->
     <main class="min-w-0 flex-1">
       <div class="mx-auto w-full max-w-[1360px] px-6 pb-8 pt-5">
-        {#if activeTab === 'home'}
-          <Home />
-        {:else if activeTab === 'providers'}
+        {#if activeTab === 'providers'}
           <Providers />
-        {:else if activeTab === 'presets'}
-          <Presets />
-        {:else if activeTab === 'models'}
-          <Models />
+        {:else if activeTab === 'home'}
+          <Home />
         {:else if activeTab === 'apikey'}
           <ApiKey />
         {:else if activeTab === 'logs'}
           <Logs />
+        {:else if activeTab === 'presets'}
+          <Presets />
+        {:else if activeTab === 'models'}
+          <Models />
+        {:else if activeTab === 'chains'}
+          <ModelChains />
         {:else if activeTab === 'analytics'}
           <Analytics />
         {:else if activeTab === 'playground'}
           <Playground />
+        {:else if activeTab === 'clitool'}
+          <CliTool />
+        {:else if activeTab === 'integrations'}
+          <Integrations />
         {/if}
       </div>
     </main>

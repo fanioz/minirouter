@@ -1,5 +1,7 @@
 # Architecture: Epic 5 Dark Mode Support
 
+> **Note:** The current visual language of the dashboard is governed by the [MiniRouter Neutral Modern design system](../frontend/design/README.md) — single coral accent, warm paper + ink palette, Inter-only type, `html.dark` toggle driven by a `mode-watcher`-style root state. This epic originally specified the dark-mode wiring; the design system supersedes the token values, but the wiring pattern (`html.dark` class toggle, FOUC-blocking script, LocalStorage persistence) remains the implementation.
+
 ## Technical Approach
 
 ### 1. The `mode-watcher` Integration

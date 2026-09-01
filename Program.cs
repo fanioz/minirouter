@@ -62,6 +62,7 @@ if (isCliMode)
     cliBuilder.Logging.ClearProviders();
     
     cliBuilder.Services.AddSingleton<IProviderService, ProviderService>();
+    cliBuilder.Services.AddSingleton<IModelChainService, ModelChainService>();
     cliBuilder.Services.AddSingleton<ILogService, LogService>();
     cliBuilder.Services.AddSingleton<IApiKeyService, ApiKeyService>();
     cliBuilder.Services.AddSingleton<IProxyService, ProxyService>();
@@ -76,6 +77,9 @@ if (isCliMode)
     
     var pService = cliApp.Services.GetRequiredService<IProviderService>();
     await pService.LoadProvidersAsync();
+    
+    var cService = cliApp.Services.GetRequiredService<IModelChainService>();
+    await cService.LoadChainsAsync();
     
     var lService = cliApp.Services.GetRequiredService<ILogService>();
     await lService.InitializeAsync();
@@ -258,6 +262,7 @@ var builder = WebApplication.CreateBuilder(args);
 
     // Register provider service behind its interface (required for DI resolution in endpoints)
     builder.Services.AddSingleton<IProviderService, ProviderService>();
+    builder.Services.AddSingleton<IModelChainService, ModelChainService>();
     builder.Services.AddSingleton<IPresetService, PresetService>();
 builder.Services.AddSingleton<ILogService, LogService>();
 builder.Services.AddSingleton<IApiKeyService, ApiKeyService>();
@@ -295,6 +300,9 @@ app.UseStaticFiles();
 // Initialize providers from JSON config file
 var providerService = app.Services.GetRequiredService<IProviderService>();
 await providerService.LoadProvidersAsync();
+
+var chainService = app.Services.GetRequiredService<IModelChainService>();
+await chainService.LoadChainsAsync();
 
 var logService = app.Services.GetRequiredService<ILogService>();
 await logService.InitializeAsync();
@@ -495,6 +503,52 @@ app.MapDelete("/api/keys/{id}", async (string id, IApiKeyService service) =>
     return deleted ? Results.NoContent() : Results.NotFound(new ErrorResponse($"ApiKey '{id}' not found"));
 });
 
+// Model Chains CRUD endpoints
+app.MapGet("/api/model-chains", (IModelChainService chains) =>
+    Results.Json(chains.ListChains().ToList(), AppJsonContext.Default.ModelChainList))
+.AddEndpointFilter<ApiKeyEndpointFilter>();
+
+app.MapPost("/api/model-chains", async (CreateModelChainDto dto, IModelChainService chains) =>
+{
+    try
+    {
+        var chain = await chains.CreateChainAsync(dto);
+        return Results.Created($"/api/model-chains/{chain.Name}", chain);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.Problem(statusCode: 400, detail: ex.Message);
+    }
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
+
+app.MapPut("/api/model-chains/{name}", async (string name, UpdateModelChainDto dto, IModelChainService chains, IMemoryCache cache) =>
+{
+    try
+    {
+        var chain = await chains.UpdateChainAsync(name, dto);
+        cache.Remove("v1_models_openai");
+        return Results.Ok(chain);
+    }
+    catch (KeyNotFoundException ex)
+    {
+        return Results.Problem(statusCode: 404, detail: ex.Message);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.Problem(statusCode: 400, detail: ex.Message);
+    }
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
+
+app.MapDelete("/api/model-chains/{name}", async (string name, IModelChainService chains, IMemoryCache cache) =>
+{
+    var deleted = await chains.DeleteChainAsync(name);
+    if (deleted) cache.Remove("v1_models_openai");
+    return deleted ? Results.NoContent() : Results.Problem(statusCode: 404, detail: $"Chain '{name}' not found.");
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
+
 // Round-robin proxy: POST /v1/chat/completions -> next enabled provider serving the requested model
 app.MapPost("/v1/chat/completions", async (HttpContext ctx, IProxyService proxyService) =>
 {
@@ -574,6 +628,55 @@ app.MapPost("/_shutdown", (Microsoft.Extensions.Hosting.IHostApplicationLifetime
     return Results.Ok(); 
 });
 
+// Story 10.1: GET /v1/models — OpenAI-format flat model list for Codex CLI compatibility
+// Story 13.1: Also includes model chain names as virtual models
+app.MapGet("/v1/models", async (IProviderService providerService, IModelChainService chainService, IMemoryCache cache, IConfiguration config) =>
+{
+    const string cacheKey = "v1_models_openai";
+    if (cache.TryGetValue(cacheKey, out OpenAiModelList? cachedList) && cachedList != null)
+        return Results.Json(cachedList, AppJsonContext.Default.OpenAiModelList);
+
+    var providers = await providerService.ListProvidersUnmaskedAsync();
+    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    var data = new List<OpenAiModelEntry>();
+
+    foreach (var p in providers.Where(p => p.Enabled))
+    {
+        var models = p.Models ?? (p.Model != null ? new List<string> { p.Model } : new List<string>());
+        foreach (var m in models)
+        {
+            // Prefix with providerId/ only if the model ID doesn't already contain a /
+            var id = m.Contains('/') ? m : $"{p.Id}/{m}";
+            if (seen.Add(id))
+                data.Add(new OpenAiModelEntry(id, "model", p.Id));
+        }
+    }
+
+    // Story 13.1: Append model chain names as discoverable virtual models
+    foreach (var c in chainService.ListChains())
+    {
+        if (seen.Add(c.Name))
+            data.Add(new OpenAiModelEntry(c.Name, "model", "chain"));
+    }
+
+    int ttl = 300;
+    if (int.TryParse(config["MODELS_CACHE_TTL_SECONDS"] ?? Environment.GetEnvironmentVariable("MODELS_CACHE_TTL_SECONDS"), out int parsedTtl))
+        ttl = parsedTtl;
+
+    var result = new OpenAiModelList("list", data);
+    cache.Set(cacheKey, result, TimeSpan.FromSeconds(ttl));
+    return Results.Json(result, AppJsonContext.Default.OpenAiModelList);
+});
+
+// Story 10.1: GET /api/config/auth-passthrough — read-only, no auth filter
+app.MapGet("/api/config/auth-passthrough", (IConfiguration config) =>
+{
+    var enabled = bool.TryParse(
+        config["AUTH_PASSTHROUGH"] ?? Environment.GetEnvironmentVariable("AUTH_PASSTHROUGH"),
+        out var v) && v;
+    return Results.Json(new AuthPassthroughConfig(enabled), AppJsonContext.Default.AuthPassthroughConfig);
+});
+
 app.Lifetime.ApplicationStarted.Register(() => 
 {
     var server = app.Services.GetRequiredService<Microsoft.AspNetCore.Hosting.Server.IServer>();
@@ -585,6 +688,15 @@ app.Lifetime.ApplicationStopped.Register(() =>
 {
     if (File.Exists(".minirouter.pid")) File.Delete(".minirouter.pid");
 });
+
+// Startup warning for AUTH_PASSTHROUGH mode
+var authPassthroughEnabled = bool.TryParse(
+    app.Configuration["AUTH_PASSTHROUGH"] ?? Environment.GetEnvironmentVariable("AUTH_PASSTHROUGH"),
+    out var aptVal) && aptVal;
+if (authPassthroughEnabled)
+{
+    Console.Error.WriteLine("[WARN] AUTH_PASSTHROUGH=true — API key validation disabled. Do not expose port publicly.");
+}
 
 app.Run();
 return 0;

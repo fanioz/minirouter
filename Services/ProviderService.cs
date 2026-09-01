@@ -182,21 +182,39 @@ public class ProviderService : IProviderService, IDisposable
     private async Task PersistAsync(List<Provider> providers, CancellationToken ct = default)
     {
         var tmpPath = GetTempPath();
-        await using var fs = new FileStream(tmpPath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await using var writer = new StreamWriter(fs);
-        var json = JsonSerializer.Serialize(providers, AppJsonContext.Default.ProviderList);
-        await writer.WriteAsync(json);
-        await writer.FlushAsync();
-        fs.Flush(true);
-        
-        // Backup existing valid config before overwriting
-        if (File.Exists(_configPath))
-        {
-            var backupPath = _configPath + ".bak";
-            File.Copy(_configPath, backupPath, overwrite: true);
-        }
+        var backupPath = _configPath + ".bak";
 
-        File.Move(tmpPath, _configPath, overwrite: true);
+        try
+        {
+            // Atomic write: write to temp file, then move
+            await using var fs = new FileStream(tmpPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using var writer = new StreamWriter(fs);
+            var json = JsonSerializer.Serialize(providers, AppJsonContext.Default.ProviderList);
+            await writer.WriteAsync(json);
+            await writer.FlushAsync();
+            fs.Flush(true);
+
+            // Backup existing valid config before overwriting (create backup first)
+            if (File.Exists(_configPath))
+            {
+                // Delete old backup, create new one atomically
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
+                File.Copy(_configPath, backupPath, overwrite: false);
+            }
+
+            // Atomic move to final location
+            File.Move(tmpPath, _configPath, overwrite: true);
+        }
+        catch
+        {
+            // Clean up temp file on error
+            if (File.Exists(tmpPath))
+            {
+                try { File.Delete(tmpPath); } catch { }
+            }
+            throw;
+        }
     }
 
     public async Task<Provider> CreateProviderAsync(CreateProviderDto dto)

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Colors — Semantic — MiniRouter</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+ body{padding:24px;max-width:980px;margin:0 auto}
+ h1{font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
+ .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+ .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:var(--shadow-card)}
+ .sw{height:42px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;padding:0 12px;font-family:var(--font-mono);font-size:11.5px;font-weight:700}
+ .label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:750;color:var(--meta);margin:10px 0 6px}
+ .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:11px;font-weight:750;letter-spacing:.02em}
+ @media(max-width:740px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>Colors — Semantic</h1>
+<p class="sub">Success / warn / danger pairs: solid for badges/dots, soft for backgrounds. Dark values shown in parentheses are the `html.dark` remap.</p>
+
+<div class="grid">
+  <div class="card">
+    <div class="label">Success — live / ok</div>
+    <div class="sw" style="background:var(--success);color:white;border-color:var(--success)">#0EA464 · --success (dark #22c97a)</div>
+    <div class="sw" style="background:var(--success-soft);color:var(--success);margin-top:8px;border-color:#A7F3D0">soft #ECFDF5 · ↑ badge / progress</div>
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      <span class="badge" style="background:var(--success);color:white;border-color:var(--success)">● Live</span>
+      <span class="badge" style="background:var(--success-soft);color:var(--success);border-color:#A7F3D0">98.4% ok</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="label">Warn — mid latency</div>
+    <div class="sw" style="background:var(--warn);color:white;border-color:var(--warn)">#D97706 · --warn (dark #eab308)</div>
+    <div class="sw" style="background:var(--warn-soft);color:#92400E;margin-top:8px;border-color:#FDE68A">soft #FFFBEB · health note card</div>
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      <span class="badge" style="background:var(--warn);color:white;border-color:var(--warn)">● Warn</span>
+      <span class="badge" style="background:var(--warn-soft);color:#92400E;border-color:#FDE68A">412ms p95</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="label">Danger — bad / open / fail</div>
+    <div class="sw" style="background:var(--danger);color:white;border-color:var(--danger)">#DC2626 · --danger (dark #ef4444)</div>
+    <div class="sw" style="background:var(--danger-soft);color:var(--danger);margin-top:8px;border-color:#FECACA">soft #FEF2F2 · fail badge / ↓ pill</div>
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      <span class="badge" style="background:var(--danger);color:white;border-color:var(--danger)">● Open</span>
+      <span class="badge" style="background:var(--danger-soft);color:var(--danger);border-color:#FECACA">Failed</span>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <div class="label">Text hierarchy</div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+    <span style="font-size:28px;font-weight:700;letter-spacing:-.03em">Fg #111</span>
+    <span style="color:var(--muted)">Muted #6B7280 — secondary</span>
+    <span style="color:var(--meta)">Meta #9CA3AF — labels / axis</span>
+    <span style="font-family:var(--font-mono);background:var(--surface-warm);border:1px solid var(--border-soft);padding:4px 8px;border-radius:999px;font-size:12px">Mono #2B2B2B — tokens</span>
+  </div>
+  <div style="margin-top:10px;font-size:12px;color:var(--muted)">Contrast: fg on bg 18:1, muted on bg 5.2:1, meta used only for large/caps labels (≥10.5/700) where 3:1 is acceptable. All interactive text meets 4.5:1.</div>
+</div>
+
+<div class="card" style="margin-top:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+  <div class="label" style="margin:0">Comparison pill</div>
+  <span style="font-size:12px;font-weight:600;color:#7C4A32;background:#FFF1E8;border:1px solid #FFD9C2;padding:5px 10px;border-radius:999px">Improved v2 — same routes, richer observability</span>
+  <span style="font-size:12px;color:var(--muted)">Warm coral tint, not gray — used once per header.</span>
+</div>
+</body>
+</html>
