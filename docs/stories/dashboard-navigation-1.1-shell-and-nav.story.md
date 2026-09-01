@@ -14,7 +14,7 @@ quality_gate_tools: ["coderabbit", "npm-build", "vitest"]
 
 ## Status
 
-In Review
+Done
 
 ## Context (epic)
 
@@ -203,6 +203,7 @@ Passed!  - Failed:     0, Passed:    84, Skipped:     0, Total:    84, Duration:
 | 2026-08-28 | 0.1     | Initial draft   | @sm (River) |
 | 2026-08-28 | 0.2     | GO (score 9/10) — Status: Draft → Ready; resolved 4 open questions; flagged 2 factual corrections to Dev Notes (topbar already exists; wave must cover all 8 existing tabs, not 4) | @po (Pax) |
 | 2026-08-28 | 0.3     | Status: Ready → In Review — Wave 1 implemented: hash router + persist layer + App.svelte refactor + 8 new tests; all 20 vitest + 84 dotnet tests pass; `npm run build` succeeds. Files: `frontend/src/lib/router.js` (new), `frontend/src/lib/persist.js` (new), `frontend/src/App.svelte` (refactored), `frontend/src/App.test.js` (extended), `frontend/src/setupTests.js` (localStorage shim). Commit `4d24faa`. | @dev (Dex) |
+| 2026-08-28 | 0.4     | PASS (score 7/7) — Status: In Review → Done. All 10 ACs satisfied; vitest 20/20, dotnet 84/84, vite build 3.50s. Deviations (.ts→.js + inline Providers placeholder) ratified. See `## QA Results` below. | @qa (Quinn) |
 
 ## Change Log
 | Date       | Version | Description     | Author      |

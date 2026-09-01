@@ -16,7 +16,8 @@ export const KNOWN_ROUTES = [
   'playground',
   'analytics',
   'logs',
-  'apikey'
+  'apikey',
+  'clitool'
 ];
 
 /**

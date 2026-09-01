@@ -6,13 +6,16 @@
   import Models from './Models.svelte';
   import Home from './Home.svelte';
   import ApiKey from './ApiKey.svelte';
+  import CliTool from './CliTool.svelte';
   import Logs from './Logs.svelte';
   import Analytics from './Analytics.svelte';
   import Playground from './Playground.svelte';
+  import Integrations from './Integrations.svelte';
+  import ModelChains from './ModelChains.svelte';
   import { Toaster } from '$lib/components/ui/sonner';
   import {
     PanelLeft, LayoutDashboard, Settings, Box, Key, ScrollText,
-    BarChart3, MessageSquare, Sun, Moon, Monitor, LayoutGrid
+    BarChart3, MessageSquare, Sun, Moon, Monitor, LayoutGrid, SquareTerminal, Plug, Link2
   } from '@lucide/svelte';
   import { route, navigate, DEFAULT_ROUTE, parseHash } from '$lib/router.js';
   import { loadNav, saveNav, DEFAULTS } from '$lib/persist.js';
@@ -25,7 +28,10 @@
     { id: 'providers', label: 'Providers', icon: Settings },
     { id: 'presets', label: 'Presets', icon: LayoutGrid },
     { id: 'models', label: 'Models', icon: Box },
-    { id: 'playground', label: 'Playground', icon: MessageSquare }
+    { id: 'chains', label: 'Chains', icon: Link2 },
+    { id: 'playground', label: 'Playground', icon: MessageSquare },
+    { id: 'clitool', label: 'CLI Tool', icon: SquareTerminal },
+    { id: 'integrations', label: 'Integrations', icon: Plug }
   ];
   const observeTabs = [
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -251,7 +257,7 @@
     <main class="min-w-0 flex-1">
       <div class="mx-auto w-full max-w-[1360px] px-6 pb-8 pt-5">
         {#if activeTab === 'providers'}
-          <h1 class="text-2xl font-bold">Providers — Wave 2 placeholder</h1>
+          <Providers />
         {:else if activeTab === 'home'}
           <Home />
         {:else if activeTab === 'apikey'}
@@ -262,10 +268,16 @@
           <Presets />
         {:else if activeTab === 'models'}
           <Models />
+        {:else if activeTab === 'chains'}
+          <ModelChains />
         {:else if activeTab === 'analytics'}
           <Analytics />
         {:else if activeTab === 'playground'}
           <Playground />
+        {:else if activeTab === 'clitool'}
+          <CliTool />
+        {:else if activeTab === 'integrations'}
+          <Integrations />
         {/if}
       </div>
     </main>

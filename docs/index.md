@@ -60,6 +60,18 @@ PRD for the CLI `restart` command.
 
 Combined PRD for the home/about dashboard pages.
 
+### [Epic 11 — OpenAI Responses API Adapter](./prd/epic-11-responses-api-adapter.md)
+
+PRD for Codex CLI support via OpenAI Responses API translation layer.
+
+### [Epic 12 — Apply Configuration Button](./prd/epic-12-apply-configuration-button.md)
+
+PRD for one-click CLI tool setup with secure config file writes to Claude Code and Codex CLI user-level configs.
+
+### [Epic 13 — Model Chains](./prd/epic-13-model-chains.md)
+
+PRD for named fallback sequences: define `tier1 → [opus, kimi, glm]` once; callers use a single stable model name.
+
 ### [UX Spec — Terminal Restart Server](./ux-terminal-restart-server.md)
 
 Terminal UX specification for the restart server CLI.
@@ -86,11 +98,15 @@ Active and recent epics:
 
 - **Epic 1** — Provider Management Dashboard (stories 1.1–1.5)
 - **Epic 2** — Razor + CLI provider management (stories 2.1–2.4)
-- **Epic 4** — Playground chatbox (story 4.1)
+- **Epic 4** — Playground chatbox (story 4.1); model selector provider context (story 4.2)
 - **Epic 5** — Dark mode
 - **Epic 7** — Comma-separated fallback (story 7.1)
 - **Epic 8** — Technical debt round 1 (stories 8.1–8.7) — atomic writes, error classification, capability flags, Anthropic translation, pricing
 - **Epic 9** — Preset providers (story 9.1)
+- **Epic 10** — Claude Code and Codex CLI support (story 10.1) — x-api-key header, AUTH_PASSTHROUGH, /v1/models endpoint
+- **Epic 11** — OpenAI Responses API Adapter (story 11.1) — Codex CLI wire_api="responses" protocol translation
+- **Epic 12** — Apply Configuration Button (story 12.1) — one-click CLI tool setup with secure config file writes
+- **Epic 13** — Model Chains (story 13.1) — named fallback sequences: `tier1` → `[anthropic/opus, openrouter/kimi, openrouter/glm]`
 - Plus retrospective `epic-5-dark-mode.story.md`, `epic-capability-parity.md`, `epic-technical-debt.md`, and historical `story-1.1`–`story-1.4` writeups.
 
 ## Reports

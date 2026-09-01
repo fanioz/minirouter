@@ -22,12 +22,14 @@ public class ProxyService : IProxyService
     private readonly IProviderService _providerService;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogService _logService;
+    private readonly IModelChainService _chainService;
 
-    public ProxyService(IProviderService providerService, IHttpClientFactory httpClientFactory, ILogService logService)
+    public ProxyService(IProviderService providerService, IHttpClientFactory httpClientFactory, ILogService logService, IModelChainService chainService)
     {
         _providerService = providerService;
         _httpClientFactory = httpClientFactory;
         _logService = logService;
+        _chainService = chainService;
     }
 
     public async Task HandleChatCompletionAsync(HttpContext ctx)
@@ -290,69 +292,94 @@ public class ProxyService : IProxyService
             };
         }
 
-        if (request.RequestedModel.Contains('/'))
+        // Model chain resolution — must come before the '/' check
+        var chain = _chainService.GetChain(request.RequestedModel);
+        if (chain != null)
         {
-            var targetModels = request.RequestedModel.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            ProxyExecutionResult? lastResult = null;
-
-            foreach (var target in targetModels)
+            if (chain.Models == null || chain.Models.Count == 0)
             {
-                var parts = target.Split('/', 2);
-                if (parts.Length != 2)
-                {
-                    lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status400BadRequest, ErrorMessage = $"Model '{target}' must be specified as 'providerId/modelName'." };
-                    continue;
-                }
-
-                var targetProviderId = parts[0];
-                var targetModelName = parts[1];
-
-                var maskedProvider = await _providerService.GetProviderByIdAsync(targetProviderId);
-                if (maskedProvider == null)
-                {
-                    lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status404NotFound, ErrorMessage = $"Provider '{targetProviderId}' not found" };
-                    continue;
-                }
-
-                if (!maskedProvider.Enabled)
-                {
-                    lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status400BadRequest, ErrorMessage = $"Provider '{targetProviderId}' is disabled" };
-                    continue;
-                }
-
-                var circuitStatus = _providerService.GetCircuitStatus(targetProviderId, targetModelName);
-                if (circuitStatus == CircuitStatus.Open)
-                {
-                    lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status503ServiceUnavailable, ErrorMessage = $"Provider '{targetProviderId}' model '{targetModelName}' is temporarily unavailable (circuit open)" };
-                    continue;
-                }
-                
-                var provider = await _providerService.GetProviderByIdUnmaskedAsync(targetProviderId);
-                if (provider == null)
-                {
-                    lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status404NotFound, ErrorMessage = $"Provider '{targetProviderId}' not found" };
-                    continue;
-                }
-                
-                var result = await ExecuteSingleProviderAsync(provider, targetModelName, request, ct);
-                
-                // If success or a 4xx client error (except 429 Too Many Requests), don't fallback. Return immediately.
-                if (result.Success || (result.StatusCode >= 400 && result.StatusCode < 500 && result.StatusCode != StatusCodes.Status429TooManyRequests))
-                {
-                    return result;
-                }
-
-                // If 5xx or 429, save as lastResult and fallback to next model
-                lastResult = result;
+                return new ProxyExecutionResult 
+                { 
+                    Success = false, 
+                    StatusCode = StatusCodes.Status400BadRequest, 
+                    ErrorMessage = $"Model chain '{chain.Name}' has no targets configured." 
+                };
             }
 
-            return lastResult ?? new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status502BadGateway, ErrorMessage = "All fallback models exhausted" };
+            return await ExecuteExplicitChainAsync(chain.Models, request, ct);
         }
-        else
+
+        // Explicit routing (contains '/'): providerId/modelId or comma-separated list
+        if (request.RequestedModel.Contains('/'))
         {
-            // Round-robin execution for virtual model aliases
-            return await HandleRoundRobinExecutionAsync(request.RequestedModel, request, ct);
+            var targets = request.RequestedModel.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            return await ExecuteExplicitChainAsync(targets, request, ct);
         }
+
+        // Round-robin execution for virtual model aliases (bare model name without '/')
+        return await HandleRoundRobinExecutionAsync(request.RequestedModel, request, ct);
+    }
+
+    /// <summary>
+    /// Executes an ordered list of "providerId/modelId" targets as a waterfall.
+    /// Falls through only on 5xx or 429; stops on success or any other 4xx.
+    /// </summary>
+    private async Task<ProxyExecutionResult> ExecuteExplicitChainAsync(IEnumerable<string> targets, ProxyExecutionRequest request, CancellationToken ct)
+    {
+        ProxyExecutionResult? lastResult = null;
+
+        foreach (var target in targets)
+        {
+            var parts = target.Split('/', 2);
+            if (parts.Length != 2)
+            {
+                lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status400BadRequest, ErrorMessage = $"Model '{target}' must be specified as 'providerId/modelName'." };
+                continue;
+            }
+
+            var targetProviderId = parts[0];
+            var targetModelName = parts[1];
+
+            var maskedProvider = await _providerService.GetProviderByIdAsync(targetProviderId);
+            if (maskedProvider == null)
+            {
+                lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status404NotFound, ErrorMessage = $"Provider '{targetProviderId}' not found" };
+                continue;
+            }
+
+            if (!maskedProvider.Enabled)
+            {
+                lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status400BadRequest, ErrorMessage = $"Provider '{targetProviderId}' is disabled" };
+                continue;
+            }
+
+            var circuitStatus = _providerService.GetCircuitStatus(targetProviderId, targetModelName);
+            if (circuitStatus == CircuitStatus.Open)
+            {
+                lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status503ServiceUnavailable, ErrorMessage = $"Provider '{targetProviderId}' model '{targetModelName}' is temporarily unavailable (circuit open)" };
+                continue;
+            }
+            
+            var provider = await _providerService.GetProviderByIdUnmaskedAsync(targetProviderId);
+            if (provider == null)
+            {
+                lastResult = new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status404NotFound, ErrorMessage = $"Provider '{targetProviderId}' not found" };
+                continue;
+            }
+            
+            var result = await ExecuteSingleProviderAsync(provider, targetModelName, request, ct);
+            
+            // If success or a 4xx client error (except 429 Too Many Requests), don't fallback. Return immediately.
+            if (result.Success || (result.StatusCode >= 400 && result.StatusCode < 500 && result.StatusCode != StatusCodes.Status429TooManyRequests))
+            {
+                return result;
+            }
+
+            // If 5xx or 429, save as lastResult and fallback to next model
+            lastResult = result;
+        }
+
+        return lastResult ?? new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status502BadGateway, ErrorMessage = "All fallback models exhausted" };
     }
 
     private async Task<ProxyExecutionResult> HandleRoundRobinExecutionAsync(string? requestedModel, ProxyExecutionRequest request, CancellationToken ct)
@@ -445,6 +472,14 @@ public class ProxyService : IProxyService
         foreach (var header in request.Headers)
         {
             requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        // Strip Anthropic-specific headers for non-Anthropic upstream providers.
+        // anthropic-version and anthropic-beta are only understood by api.anthropic.com.
+        if (!provider.BaseUrl.Contains("api.anthropic.com", StringComparison.OrdinalIgnoreCase))
+        {
+            requestMessage.Headers.Remove("anthropic-version");
+            requestMessage.Headers.Remove("anthropic-beta");
         }
 
         if (!string.IsNullOrEmpty(provider.ApiKey))

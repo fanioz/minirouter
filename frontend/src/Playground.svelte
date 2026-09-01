@@ -3,41 +3,82 @@
   import { SendHorizontal, Loader2, Bot, User, Trash2 } from 'lucide-svelte';
   import { toast } from 'svelte-sonner';
 
+  /** @typedef {Object} ModelOption
+   * @property {string} value - "providerId/modelId"
+   * @property {string} label - "model-name — Provider Name"
+   * @property {string} modelId - bare model id
+   * @property {string} circuitStatus - "healthy" | "degraded" | "open"
+   */
+
+  /** @typedef {Object} ProviderGroup
+   * @property {string} providerId
+   * @property {string} providerName
+   * @property {string | null} error
+   * @property {ModelOption[]} models
+   */
+
   let messages = $state([]);
   let inputMessage = $state('');
   let isGenerating = $state(false);
   let selectedModel = $state('');
   let apiKey = $state('');
-  let availableModels = $state([]);
+  let availableModels = $state(/** @type {ProviderGroup[]} */ []);
+  let hasWildcard = $state(false);
   let chatContainer;
+
+  /**
+   * Returns emoji prefix for circuit status
+   * @param {string} status - "healthy" | "degraded" | "open"
+   * @returns {string}
+   */
+  function circuitDot(status) {
+    if (status === 'open') return '🔴 ';
+    if (status === 'degraded') return '🟡 ';
+    return '🟢 '; // healthy or unknown
+  }
 
   onMount(async () => {
     try {
       const res = await fetch('/models');
       if (res.ok) {
         const data = await res.json();
-        const models = [];
-        let hasWildcard = false;
+        const groups = [];
+        let wc = false;
+
         for (const provider of data) {
+          const group = {
+            providerId: provider.providerId,
+            providerName: provider.providerName,
+            error: provider.error ?? null,
+            models: []
+          };
+
           if (provider.models && Array.isArray(provider.models)) {
-            if (provider.models.length === 0) hasWildcard = true;
-            provider.models.forEach(m => {
-              // Use explicit routing (provider/model) so every discovered model is reachable
+            if (provider.models.length === 0) wc = true;
+            for (const m of provider.models) {
+              if (!m.id) continue;
               const value = `${provider.providerId}/${m.id}`;
-              if (m.id && !models.some(x => x.value === value)) {
-                models.push({ value, label: m.id });
-              }
-            });
+              group.models.push({
+                value,
+                label: `${m.id} — ${provider.providerName}`,
+                modelId: m.id,
+                circuitStatus: m.circuitStatus ?? 'healthy'
+              });
+            }
           } else {
-            hasWildcard = true;
+            wc = true;
           }
+
+          groups.push(group);
         }
-        if (hasWildcard) {
-          models.unshift({ value: 'auto', label: 'auto (round-robin)' });
-        }
-        availableModels = models;
-        if (models.length > 0 && !selectedModel) {
-          selectedModel = models[0].value;
+
+        hasWildcard = wc;
+        availableModels = groups;
+
+        // Select first model from first group if not already selected
+        const firstModel = groups.flatMap(g => g.models)[0];
+        if (firstModel && !selectedModel) {
+          selectedModel = firstModel.value;
         }
       }
     } catch (e) {

@@ -120,8 +120,8 @@ describe('App - Routing & Persistence', () => {
     // No flash of home: Providers is the active tab right after mount.
     const providersBtn = screen.getAllByRole('button', { name: /providers/i })[0];
     expect(providersBtn).toHaveAttribute('aria-current', 'page');
-    // And the placeholder copy for Providers is visible.
-    expect(screen.getByText(/Providers — Wave 2 placeholder/i)).toBeInTheDocument();
+    // And the Providers component heading is visible.
+    expect(screen.getByRole('heading', { level: 1, name: 'Providers' })).toBeInTheDocument();
   });
 
   it('persists collapsed + active route to localStorage and restores on remount', async () => {

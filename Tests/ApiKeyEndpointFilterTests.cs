@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 using MiniRouter.Filters;
@@ -17,15 +18,21 @@ namespace MiniRouter.Tests
         public ApiKeyEndpointFilterTests()
         {
             _apiKeyServiceMock = new Mock<IApiKeyService>();
-            _filter = new ApiKeyEndpointFilter(_apiKeyServiceMock.Object);
+            // Default config: AUTH_PASSTHROUGH not set (disabled)
+            var config = new ConfigurationBuilder().Build();
+            _filter = new ApiKeyEndpointFilter(_apiKeyServiceMock.Object, config);
         }
 
-        private static EndpointFilterInvocationContext CreateContext(string? authHeader)
+        private static EndpointFilterInvocationContext CreateContext(string? authHeader, string? xApiKey = null)
         {
             var httpContext = new DefaultHttpContext();
             if (authHeader != null)
             {
                 httpContext.Request.Headers.Authorization = authHeader;
+            }
+            if (xApiKey != null)
+            {
+                httpContext.Request.Headers["x-api-key"] = xApiKey;
             }
 
             var invocation = new Mock<EndpointFilterInvocationContext>();
@@ -91,6 +98,48 @@ namespace MiniRouter.Tests
 
             Assert.Equal("next", result);
             Assert.Equal("key1", ctx.HttpContext.Items["ApiKeyId"]);
+        }
+
+        // --- x-api-key header tests (AC 1) ---
+
+        [Fact]
+        public async Task XApiKeyHeader_ValidKey_ProceedsAndSetsApiKeyId()
+        {
+            _apiKeyServiceMock.Setup(s => s.ValidateAndRecordUsageAsync("sk-valid"))
+                .ReturnsAsync(new ApiKey { Id = "key1", Enabled = true });
+
+            // No Authorization header — Claude Code style
+            var ctx = CreateContext(null, xApiKey: "sk-valid");
+            var result = await _filter.InvokeAsync(ctx, _ => ValueTask.FromResult<object?>("next"));
+
+            Assert.Equal("next", result);
+            Assert.Equal("key1", ctx.HttpContext.Items["ApiKeyId"]);
+        }
+
+        [Fact]
+        public async Task XApiKeyHeader_UnknownKey_ReturnsUnauthorized()
+        {
+            _apiKeyServiceMock.Setup(s => s.ValidateAndRecordUsageAsync("sk-unknown"))
+                .ReturnsAsync((ApiKey?)null);
+
+            var ctx = CreateContext(null, xApiKey: "sk-unknown");
+            var result = await _filter.InvokeAsync(ctx, _ => ValueTask.FromResult<object?>("next"));
+
+            var status = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
+            Assert.Equal(StatusCodes.Status401Unauthorized, status.StatusCode);
+        }
+
+        [Fact]
+        public async Task XApiKeyHeader_DisabledKey_ReturnsUnauthorized()
+        {
+            _apiKeyServiceMock.Setup(s => s.ValidateAndRecordUsageAsync("sk-disabled"))
+                .ReturnsAsync(new ApiKey { Id = "key1", Enabled = false });
+
+            var ctx = CreateContext(null, xApiKey: "sk-disabled");
+            var result = await _filter.InvokeAsync(ctx, _ => ValueTask.FromResult<object?>("next"));
+
+            var status = Assert.IsAssignableFrom<IStatusCodeHttpResult>(result);
+            Assert.Equal(StatusCodes.Status401Unauthorized, status.StatusCode);
         }
     }
 }

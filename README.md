@@ -361,3 +361,15 @@ To accurately represent the constrained behavior of MiniRouter without skewing t
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## CLI Tool (Dashboard)
+
+The dashboard's **CLI Tool** tab generates copy-paste configuration for CLI coding agents that talk to MiniRouter's OpenAI- and Anthropic-compatible endpoints. The endpoint, API key, and example model are editable and every snippet updates live. Plaintext keys are shown only once at creation (see the **API Keys** tab); local/loopback requests work without a key. Model ids must be referenced as `providerId/modelName` (e.g. `openai-primary/gpt-4o-mini`).
+
+| Agent | Status | Configuration |
+|-------|--------|---------------|
+| Claude Code | Supported | `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN` env vars (or `~/.claude/settings.json`) |
+| Codex CLI | Needs Responses API | `~/.codex/config.toml` (`wire_api = "responses"` — requires a Responses API adapter in MiniRouter first) |
+| OpenCode | Supported | `opencode.json` with `@ai-sdk/openai-compatible` |
+| Aider | Supported | `OPENAI_API_BASE` / `OPENAI_API_KEY` + `aider --model openai/<model>` |
+| Gemini CLI | Not supported | No custom OpenAI-compatible base URL upstream |
