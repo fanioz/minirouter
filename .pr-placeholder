@@ -1,0 +1,3 @@
+# Story 8.7 QA fix (F-1…F-4) + router rider
+
+This PR addresses the reopened cost-calculation regression and adjacent QA findings from the 2026-08-29 full-project review. See individual commits for each ticket's implementation.
