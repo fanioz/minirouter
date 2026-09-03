@@ -318,7 +318,8 @@ app.MapGet("/api/providers", async (IProviderService service) =>
 {
     var providers = await service.ListProvidersAsync();
     return Results.Ok(providers);
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapGet("/api/providers/{id}", async (string id, IProviderService service) =>
 {
@@ -326,7 +327,8 @@ app.MapGet("/api/providers/{id}", async (string id, IProviderService service) =>
     return provider is null
         ? Results.NotFound(new ErrorResponse($"Provider '{id}' not found"))
         : Results.Ok(provider);
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapPost("/api/providers", async (CreateProviderDto dto, IProviderService service, IMemoryCache cache) =>
 {
@@ -346,7 +348,8 @@ app.MapPost("/api/providers", async (CreateProviderDto dto, IProviderService ser
     {
         return Results.Conflict(new ErrorResponse(ex.Message));
     }
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapPut("/api/providers/{id}", async (string id, UpdateProviderDto dto, IProviderService service, IMemoryCache cache) =>
 {
@@ -366,14 +369,16 @@ app.MapPut("/api/providers/{id}", async (string id, UpdateProviderDto dto, IProv
     {
         return Results.NotFound(new ErrorResponse(ex.Message));
     }
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapDelete("/api/providers/{id}", async (string id, IProviderService service, IMemoryCache cache) =>
 {
     var deleted = await service.DeleteProviderAsync(id);
     if (deleted) cache.Remove("aggregated_models");
     return deleted ? Results.NoContent() : Results.NotFound(new ErrorResponse($"Provider '{id}' not found"));
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapPost("/api/providers/test", async (TestConnectionDto dto, IHttpClientFactory httpClientFactory) =>
 {
@@ -409,7 +414,8 @@ app.MapPost("/api/providers/test", async (TestConnectionDto dto, IHttpClientFact
     {
         return Results.BadRequest(new ErrorResponse($"Connection failed: {ex.Message}"));
     }
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 // Preset Providers endpoints
 app.MapGet("/api/presets", async (IPresetService service) =>
@@ -457,32 +463,37 @@ app.MapGet("/api/logs", async (string? providerId, string? apiKeyId, string? mod
 {
     var logs = await service.GetLogsAsync(providerId, apiKeyId, model, success, limit ?? 100);
     return Results.Ok(logs);
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapGet("/api/analytics/tokens", async (string? providerId, ILogService service) =>
 {
     var analytics = await service.GetAnalyticsAsync(providerId);
     return Results.Ok(analytics);
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapGet("/api/analytics/keys", async (string? apiKeyId, ILogService service) =>
 {
     var analytics = await service.GetKeyAnalyticsAsync(apiKeyId);
     return Results.Ok(analytics);
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 // API Key Endpoints
 app.MapPost("/api/keys", async (CreateApiKeyDto dto, IApiKeyService service) =>
 {
     var apiKey = await service.CreateApiKeyAsync(dto);
     return Results.Created($"/api/keys/{apiKey.Id}", apiKey);
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapGet("/api/keys", async (IApiKeyService service) =>
 {
     var keys = await service.ListApiKeysAsync();
     return Results.Ok(keys);
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapPut("/api/keys/{id}", async (string id, UpdateApiKeyDto dto, IApiKeyService service) =>
 {
@@ -495,13 +506,15 @@ app.MapPut("/api/keys/{id}", async (string id, UpdateApiKeyDto dto, IApiKeyServi
     {
         return Results.NotFound(new ErrorResponse(ex.Message));
     }
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapDelete("/api/keys/{id}", async (string id, IApiKeyService service) =>
 {
     var deleted = await service.DeleteApiKeyAsync(id);
     return deleted ? Results.NoContent() : Results.NotFound(new ErrorResponse($"ApiKey '{id}' not found"));
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 // Model Chains CRUD endpoints
 app.MapGet("/api/model-chains", (IModelChainService chains) =>
