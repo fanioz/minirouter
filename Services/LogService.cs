@@ -104,8 +104,8 @@ public class LogService : ILogService
 
         var command = connection.CreateCommand();
         command.CommandText = @"
-            INSERT INTO request_log (timestamp, provider_id, success, error_message, tokens_in, tokens_out, latency_ms, api_key_id, model, estimated)
-            VALUES ($timestamp, $provider_id, $success, $error_message, $tokens_in, $tokens_out, $latency_ms, $api_key_id, $model, $estimated)
+            INSERT INTO request_log (timestamp, provider_id, success, error_message, tokens_in, tokens_out, latency_ms, api_key_id, model, estimated, cost, cost_estimated)
+            VALUES ($timestamp, $provider_id, $success, $error_message, $tokens_in, $tokens_out, $latency_ms, $api_key_id, $model, $estimated, $cost, $cost_estimated)
         ";
         command.Parameters.AddWithValue("$timestamp", log.Timestamp.ToString("O"));
         command.Parameters.AddWithValue("$provider_id", log.ProviderId);

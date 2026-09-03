@@ -432,6 +432,9 @@ public class ProxyService : IProxyService
     {
         JsonNode? reqNode = null;
         string? actualModel = targetModelName;
+        decimal? cost = null;
+        bool costEstimated = false;
+        
         try
         {
             reqNode = JsonNode.Parse(request.RequestBodyJson);
@@ -665,6 +668,13 @@ public class ProxyService : IProxyService
                 {
                     sw.Stop();
                     _providerService.RecordFailure(provider.Id, actualModel ?? string.Empty, 0, ex.Message);
+                    
+                    if (tokensIn.HasValue && tokensOut.HasValue && !string.IsNullOrEmpty(actualModel))
+                    {
+                        cost = PricingTable.CalculateCost(tokensIn.Value, tokensOut.Value, provider.Id, actualModel);
+                        costEstimated = estimated;
+                    }
+                    
                     await _logService.LogRequestAsync(new RequestLog
                     {
                         Timestamp = DateTime.UtcNow,
@@ -675,7 +685,9 @@ public class ProxyService : IProxyService
                         TokensIn = tokensIn,
                         TokensOut = tokensOut,
                         LatencyMs = (int)sw.ElapsedMilliseconds,
-                        Model = actualModel
+                        Model = actualModel,
+                        Cost = cost,
+                        CostEstimated = costEstimated
                     });
                     
                     result.ErrorMessage = $"Streaming interrupted: {ex.Message}";
@@ -694,6 +706,12 @@ public class ProxyService : IProxyService
             estimated = true;
         }
         
+        if (tokensIn.HasValue && tokensOut.HasValue && !string.IsNullOrEmpty(actualModel))
+        {
+            cost = PricingTable.CalculateCost(tokensIn.Value, tokensOut.Value, provider.Id, actualModel);
+            costEstimated = estimated;
+        }
+        
         await _logService.LogRequestAsync(new RequestLog
         {
             Timestamp = DateTime.UtcNow,
@@ -705,7 +723,9 @@ public class ProxyService : IProxyService
             TokensOut = tokensOut,
             LatencyMs = (int)sw.ElapsedMilliseconds,
             Model = actualModel,
-            Estimated = estimated
+            Estimated = estimated,
+            Cost = cost,
+            CostEstimated = costEstimated
         });
 
         return result;
