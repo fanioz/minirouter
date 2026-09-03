@@ -17,7 +17,9 @@ export const KNOWN_ROUTES = [
   'analytics',
   'logs',
   'apikey',
-  'clitool'
+  'clitool',
+  'chains',
+  'integrations'
 ];
 
 /**
