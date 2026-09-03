@@ -74,7 +74,18 @@ and a HIGH-severity NuGet dependency vulnerability (F-4). All four are in the re
 
 ## Status
 
-In Progress (2026-08-29)
+Done (2026-09-03) — Resolved in Wave 1 via PR #14
+
+## Resolution
+
+All findings F-1 through F-4 have been fixed and merged:
+
+- **F-1** (Story 8.7 cost persistence): Fixed — cost calculation wired into ProxyService success path, columns added to INSERT statement
+- **F-2** (docker-compose port mismatch): Fixed — port mapping corrected to 5050:8080
+- **F-3** (Management plane auth): Fixed — ApiKeyEndpointFilter added to management endpoints
+- **F-4** (NuGet dependency vulnerability): Fixed — Microsoft.Data.Sqlite bumped to resolve NU1903
+
+**Merged**: https://github.com/fanioz/minirouter/pull/14
 
 ## References
 
