@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
     container_name: minirouter
     ports:
-      - "5050:5000"
+      - "5050:8080"
     volumes:
       - ./providers.json:/app/providers.json
       - ./minirouter.db:/app/minirouter.db
