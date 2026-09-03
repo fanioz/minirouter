@@ -4,6 +4,7 @@
   import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, X } from 'lucide-svelte';
   import * as Dialog from '$lib/components/ui/dialog';
   import { apiKeyStore } from '$lib/stores/apiKeyStore';
+  import { authenticatedFetch } from '$lib/auth.js';
 
   let chains = $state([]);
   let loading = $state(true);
@@ -22,7 +23,7 @@
   async function fetchChains() {
     loading = true;
     try {
-      const res = await fetch('/api/model-chains', {
+      const res = await authenticatedFetch('/api/model-chains', {
         headers: { 'X-Api-Key': $apiKeyStore }
       });
       if (!res.ok) throw new Error(`Failed to fetch: HTTP ${res.status}`);
@@ -98,7 +99,7 @@
 
       let res;
       if (modalMode === 'create') {
-        res = await fetch('/api/model-chains', {
+        res = await authenticatedFetch('/api/model-chains', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -107,7 +108,7 @@
           body: JSON.stringify(body)
         });
       } else {
-        res = await fetch(`/api/model-chains/${formData.name}`, {
+        res = await authenticatedFetch(`/api/model-chains/${formData.name}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -139,7 +140,7 @@
     if (!confirm(`Delete chain "${name}"? This cannot be undone.`)) return;
 
     try {
-      const res = await fetch(`/api/model-chains/${name}`, {
+      const res = await authenticatedFetch(`/api/model-chains/${name}`, {
         method: 'DELETE',
         headers: { 'X-Api-Key': $apiKeyStore }
       });

@@ -4,6 +4,7 @@
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
+  import { authenticatedFetch } from '$lib/auth.js';
   import { Plus, Trash2, Key, Copy, Check, Power, PowerOff, Edit2, X } from 'lucide-svelte';
 
   let apiKeys = $state([]);
@@ -26,7 +27,7 @@
   async function loadApiKeys() {
     try {
       isLoading = true;
-      const res = await fetch('/api/keys');
+      const res = await authenticatedFetch('/api/keys');
       if (res.ok) {
         apiKeys = await res.json();
       } else {
@@ -46,7 +47,7 @@
     }
 
     try {
-      const res = await fetch('/api/keys', {
+      const res = await authenticatedFetch('/api/keys', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newKeyName })
@@ -73,7 +74,7 @@
     }
 
     try {
-      const res = await fetch(`/api/keys/${id}`, {
+      const res = await authenticatedFetch(`/api/keys/${id}`, {
         method: 'DELETE'
       });
 
@@ -90,7 +91,7 @@
 
   async function toggleStatus(key) {
     try {
-      const res = await fetch(`/api/keys/${key.id}`, {
+      const res = await authenticatedFetch(`/api/keys/${key.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: key.name, enabled: !key.enabled })
@@ -118,7 +119,7 @@
     }
 
     try {
-      const res = await fetch(`/api/keys/${key.id}`, {
+      const res = await authenticatedFetch(`/api/keys/${key.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editName, enabled: key.enabled })

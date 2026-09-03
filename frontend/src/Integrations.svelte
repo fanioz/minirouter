@@ -5,6 +5,7 @@
   import { Button } from '$lib/components/ui/button';
   import { Badge } from '$lib/components/ui/badge';
   import * as Card from '$lib/components/ui/card';
+  import { authenticatedFetch } from '$lib/auth.js';
 
   let authPassthrough = $state(false);
   let loading = $state(true);
@@ -14,7 +15,7 @@
 
   onMount(async () => {
     try {
-      const res = await fetch('/api/config/auth-passthrough');
+      const res = await authenticatedFetch('/api/config/auth-passthrough');
       if (res.ok) {
         const data = await res.json();
         authPassthrough = data.enabled ?? false;

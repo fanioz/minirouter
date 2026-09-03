@@ -9,6 +9,7 @@
   import { Badge } from '$lib/components/ui/badge';
   import * as Dialog from '$lib/components/ui/dialog';
   import { Plus, Pencil, Trash2 } from '@lucide/svelte';
+  import { authenticatedFetch } from '$lib/auth.js';
 
   let providers = $state([]);
   let loading = $state(true);
@@ -36,7 +37,7 @@
     loading = true;
     error = null;
     try {
-      const res = await fetch('/api/providers');
+      const res = await authenticatedFetch('/api/providers');
       if (!res.ok) throw new Error(`Failed to fetch: HTTP ${res.status}`);
       providers = await res.json();
     } catch (e) {
@@ -83,7 +84,7 @@
         models: provider.models
       };
 
-      const res = await fetch(`/api/providers/${provider.id}`, {
+      const res = await authenticatedFetch(`/api/providers/${provider.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -135,7 +136,7 @@
         method = 'PUT';
       }
 
-      const res = await fetch(url, {
+      const res = await authenticatedFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -172,7 +173,7 @@
 
     testingConnection = true;
     try {
-      const res = await fetch('/api/providers/test', {
+      const res = await authenticatedFetch('/api/providers/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ baseUrl: formData.baseUrl, apiKey: formData.apiKey })
@@ -195,7 +196,7 @@
     if (!confirm(`Are you sure you want to delete provider '${id}'?`)) return;
 
     try {
-      const res = await fetch(`/api/providers/${id}`, { method: 'DELETE' });
+      const res = await authenticatedFetch(`/api/providers/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       toast.success(`Provider '${id}' deleted`);

@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@internationalized/date": "^3.12.4",
     "@sveltejs/vite-plugin-svelte": "^7.2.0",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/svelte": "^5.4.2",

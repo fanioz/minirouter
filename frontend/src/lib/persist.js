@@ -3,10 +3,15 @@
 // Stores `{ collapsed, route }` under `minirouter:nav:v1` in localStorage.
 // Forward-compat: bump the version segment if the shape changes.
 // Malformed values or read failures fall back to defaults.
+//
+// API key persistence (Story 8.7 F-3):
+// Stores the operator's API key under `minirouter:apikey:v1` for authenticated
+// remote dashboard sessions.
 
 import { DEFAULT_ROUTE, KNOWN_ROUTES } from './router.js';
 
 export const NAV_KEY = 'minirouter:nav:v1';
+export const API_KEY_STORAGE_KEY = 'minirouter:apikey:v1';
 
 export const DEFAULTS = Object.freeze({
   collapsed: false,
@@ -63,6 +68,52 @@ export function saveNav(state) {
   if (!ls) return;
   try {
     ls.setItem(NAV_KEY, JSON.stringify(sanitize(state)));
+  } catch {
+    // ignore — best-effort
+  }
+}
+
+/**
+ * Load the saved API key. Returns null on miss or error. Never throws.
+ *
+ * @returns {string | null}
+ */
+export function loadApiKey() {
+  const ls = safeStorage();
+  if (!ls) return null;
+  try {
+    const key = ls.getItem(API_KEY_STORAGE_KEY);
+    return key && typeof key === 'string' ? key : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Save the API key. Silent on failure (quota, disabled storage, SSR).
+ *
+ * @param {string} key - The API key to store
+ */
+export function saveApiKey(key) {
+  const ls = safeStorage();
+  if (!ls) return;
+  try {
+    if (key && typeof key === 'string') {
+      ls.setItem(API_KEY_STORAGE_KEY, key);
+    }
+  } catch {
+    // ignore — best-effort
+  }
+}
+
+/**
+ * Clear the saved API key. Silent on failure.
+ */
+export function clearApiKey() {
+  const ls = safeStorage();
+  if (!ls) return;
+  try {
+    ls.removeItem(API_KEY_STORAGE_KEY);
   } catch {
     // ignore — best-effort
   }

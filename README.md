@@ -83,10 +83,58 @@ For example, `"model": "openai-primary/gpt-4o-mini"`. The router will directly f
 
 *Note: The automatic round-robin logic previously implemented is retained in the codebase for a future "virtual model" / alias feature, but is currently bypassed by the default route.*
 
-## CRUD Endpoints
+## Remote Access & Security
 
-> [!NOTE]
-> The management endpoints below (`/providers`, `/keys`, `/logs`, `/analytics/*`, `/models`) are currently **unauthenticated**. This allows the local dashboard to function without a separate admin-auth layer. Do not expose these endpoints directly to the internet without your own auth proxy in front.
+### Management API Authentication
+
+Management endpoints (`/api/providers`, `/api/keys`, `/api/logs`, `/api/analytics/*`, `/api/config/*`) require API key authentication when accessed remotely. Requests from `localhost` or `127.0.0.1` (and in `Development` environment) are automatically exempted to enable zero-friction local workflows.
+
+**Remote dashboard access:** When connecting to MiniRouter from a different machine, click the key icon in the dashboard's top bar and enter an API key (create one via the **API Keys** tab). The key is stored in your browser's localStorage and attached to all subsequent management API calls via the `x-api-key` header.
+
+### Bootstrapping a Fresh VPS
+
+When you first deploy MiniRouter to a fresh VPS, the management API is protected but you have no keys yet. Use one of these bootstrap methods:
+
+**Option 1: SSH tunnel (recommended)**
+```bash
+# On your local machine, tunnel port 8080 to the remote server
+ssh -L 8080:localhost:8080 user@your-vps.com
+
+# In another terminal, create your first key via the loopback exemption
+curl -X POST http://localhost:8080/api/keys \
+  -H "Content-Type: application/json" \
+  -d '{"name": "remote-dashboard"}'
+
+# The response contains your plaintext key — save it
+# Now disconnect the tunnel and access the remote dashboard with that key
+```
+
+**Option 2: AUTH_PASSTHROUGH escape hatch**
+
+For fully automated deployments where SSH tunneling isn't feasible, set `AUTH_PASSTHROUGH=true` in the environment **temporarily** to disable all API key checks:
+
+```bash
+# Deploy with passthrough enabled
+docker run -e AUTH_PASSTHROUGH=true -p 8080:8080 minirouter
+
+# Create your first key via the unprotected endpoint
+curl -X POST http://your-vps:8080/api/keys \
+  -H "Content-Type: application/json" \
+  -d '{"name": "remote-dashboard"}'
+
+# Save the key, then REMOVE AUTH_PASSTHROUGH and restart
+docker stop minirouter && docker rm minirouter
+docker run -p 8080:8080 minirouter
+```
+
+> [!WARNING]
+> `AUTH_PASSTHROUGH=true` disables all management API authentication. Only use it during initial bootstrap, and remove it immediately after creating your first key.
+
+### Provider Connection Testing
+
+The `/api/providers/test` endpoint accepts a `baseUrl` and optional `apiKey` and makes a test request to that URL to verify connectivity. **This endpoint is intentionally designed for trusted operators only** — it will make an HTTP request to any URL you specify, which could be used to probe internal network services. Only grant management API keys to operators you trust with this level of access.
+
+## CRUD Endpoints
 
 ### List Upstream Models (Aggregated)
 ```bash

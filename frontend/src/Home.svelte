@@ -3,6 +3,7 @@
   import { toast } from 'svelte-sonner';
   import { Switch } from '$lib/components/ui/switch';
   import { Badge } from '$lib/components/ui/badge';
+  import { authenticatedFetch } from '$lib/auth.js';
   import { RefreshCw } from '@lucide/svelte';
 
   let providers = $state([]);
@@ -13,7 +14,7 @@
     loading = true;
     error = null;
     try {
-      const res = await fetch('/api/providers');
+      const res = await authenticatedFetch('/api/providers');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       providers = await res.json();
     } catch (e) {
@@ -34,7 +35,7 @@
         models: provider.models
       };
 
-      const res = await fetch(`/api/providers/${provider.id}`, {
+      const res = await authenticatedFetch(`/api/providers/${provider.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

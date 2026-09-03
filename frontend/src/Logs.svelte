@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
   import { Input } from '$lib/components/ui/input';
+  import { authenticatedFetch } from '$lib/auth.js';
   import { RefreshCw, FilterX } from '@lucide/svelte';
 
   let logs = $state([]);
@@ -17,7 +18,7 @@
 
   async function fetchProviders() {
     try {
-      const res = await fetch('/api/providers');
+      const res = await authenticatedFetch('/api/providers');
       if (res.ok) {
         providers = await res.json();
       }
@@ -37,7 +38,7 @@
       if (filterStatus === 'success') params.append('success', 'true');
       if (filterStatus === 'failure') params.append('success', 'false');
 
-      const response = await fetch(`/api/logs?${params.toString()}`);
+      const response = await authenticatedFetch(`/api/logs?${params.toString()}`);
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.status}`);
       }

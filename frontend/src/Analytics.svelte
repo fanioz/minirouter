@@ -11,7 +11,7 @@
     loading = true;
     error = null;
     try {
-      const res = await fetch('/api/analytics/tokens');
+      const res = await authenticatedFetch('/api/analytics/tokens');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       analytics = data.sort((a, b) => (b.totalTokensIn + b.totalTokensOut) - (a.totalTokensIn + a.totalTokensOut));

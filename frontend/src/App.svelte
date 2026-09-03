@@ -12,6 +12,7 @@
   import Playground from './Playground.svelte';
   import Integrations from './Integrations.svelte';
   import ModelChains from './ModelChains.svelte';
+  import ApiKeyPopover from './ApiKeyPopover.svelte';
   import { Toaster } from '$lib/components/ui/sonner';
   import {
     PanelLeft, LayoutDashboard, Settings, Box, Key, ScrollText,
@@ -224,15 +225,18 @@
         <span class="live-dot"></span>
         <span class="font-medium" style="color: var(--muted);">Live</span>
       </div>
-      <button
-        class="ml-auto grid h-9 w-9 place-items-center rounded-[9px] transition-colors hover:bg-accent hover:text-foreground min-[860px]:hidden"
-        style="color: var(--muted);"
-        onclick={cycleTheme}
-        title={themeLabel}
-        aria-label="Toggle theme: {themeLabel}"
-      >
-        <ThemeIcon class="h-[18px] w-[18px]" />
-      </button>
+      <div class="ml-auto flex items-center gap-1">
+        <ApiKeyPopover />
+        <button
+          class="grid h-9 w-9 place-items-center rounded-[9px] transition-colors hover:bg-accent hover:text-foreground min-[860px]:hidden"
+          style="color: var(--muted);"
+          onclick={cycleTheme}
+          title={themeLabel}
+          aria-label="Toggle theme: {themeLabel}"
+        >
+          <ThemeIcon class="h-[18px] w-[18px]" />
+        </button>
+      </div>
     </header>
 
     <!-- Mobile nav — horizontal pill strip per §5.4 -->

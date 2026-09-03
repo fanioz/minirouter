@@ -5,6 +5,7 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import * as Dialog from '$lib/components/ui/dialog';
+  import { authenticatedFetch } from '$lib/auth.js';
   import { Loader2, Key } from '@lucide/svelte';
 
   let presets = $state([]);
@@ -28,7 +29,7 @@
     loading = true;
     error = null;
     try {
-      const res = await fetch('/api/presets');
+      const res = await authenticatedFetch('/api/presets');
       if (!res.ok) throw new Error(`Failed to fetch presets: HTTP ${res.status}`);
       presets = await res.json();
     } catch (e) {
@@ -75,7 +76,7 @@
     if (nameInput.trim()) payload.name = nameInput.trim();
 
     try {
-      const res = await fetch(`/api/presets/${selectedPreset.id}/enable`, {
+      const res = await authenticatedFetch(`/api/presets/${selectedPreset.id}/enable`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -106,7 +107,7 @@
   async function enableFreePreset(preset) {
     enabling = true;
     try {
-      const res = await fetch(`/api/presets/${preset.id}/enable`, {
+      const res = await authenticatedFetch(`/api/presets/${preset.id}/enable`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
@@ -140,7 +141,7 @@
     suggestedModels = [];
     appliedModels = providerId;
     try {
-      const res = await fetch(`/api/presets/${preset.id}/models`);
+      const res = await authenticatedFetch(`/api/presets/${preset.id}/models`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       suggestedModels = await res.json();
     } catch (e) {
@@ -154,11 +155,11 @@
     if (!appliedModels || suggestedModels.length === 0) return;
     applyingModels = true;
     try {
-      const res = await fetch(`/api/providers/${appliedModels}`);
+      const res = await authenticatedFetch(`/api/providers/${appliedModels}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const provider = await res.json();
 
-      const putRes = await fetch(`/api/providers/${appliedModels}`, {
+      const putRes = await authenticatedFetch(`/api/providers/${appliedModels}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
