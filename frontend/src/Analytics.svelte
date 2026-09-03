@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
   import { RefreshCw } from '@lucide/svelte';
+  import { authenticatedFetch } from '$lib/auth.js';
 
   let analytics = $state([]);
   let loading = $state(true);
@@ -12,7 +13,13 @@
     error = null;
     try {
       const res = await authenticatedFetch('/api/analytics/tokens');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        // Skip toast for 401 - authenticatedFetch handles that
+        if (res.status !== 401) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return;
+      }
       const data = await res.json();
       analytics = data.sort((a, b) => (b.totalTokensIn + b.totalTokensOut) - (a.totalTokensIn + a.totalTokensOut));
     } catch (e) {

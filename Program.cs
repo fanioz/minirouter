@@ -449,7 +449,8 @@ app.MapPost("/api/presets/{presetId}/enable", async (
     {
         return Results.BadRequest(new ErrorResponse(ex.Message));
     }
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 app.MapGet("/api/presets/{presetId}/models", async (string presetId, IPresetService service) =>
 {
@@ -639,7 +640,8 @@ app.MapPost("/_shutdown", (Microsoft.Extensions.Hosting.IHostApplicationLifetime
 { 
     lifetime.StopApplication(); 
     return Results.Ok(); 
-});
+})
+.AddEndpointFilter<ApiKeyEndpointFilter>();
 
 // Story 10.1: GET /v1/models — OpenAI-format flat model list for Codex CLI compatibility
 // Story 13.1: Also includes model chain names as virtual models

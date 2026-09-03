@@ -18,7 +18,9 @@ export async function authenticatedFetch(url, options = {}) {
   const apiKey = loadApiKey();
   
   const headers = new Headers(options.headers || {});
-  if (apiKey) {
+  
+  // Only attach persisted key if caller hasn't supplied their own x-api-key
+  if (apiKey && !headers.has('x-api-key')) {
     headers.set('x-api-key', apiKey);
   }
   

@@ -30,7 +30,8 @@
       const res = await authenticatedFetch('/api/keys');
       if (res.ok) {
         apiKeys = await res.json();
-      } else {
+      } else if (res.status !== 401) {
+        // Skip toast for 401 - authenticatedFetch handles that
         toast.error('Failed to load API keys');
       }
     } catch (e) {
@@ -60,7 +61,7 @@
         isCreating = false;
         await loadApiKeys();
         toast.success('API Key created successfully');
-      } else {
+      } else if (res.status !== 401) {
         toast.error('Failed to create API key');
       }
     } catch (e) {
@@ -81,7 +82,7 @@
       if (res.ok) {
         apiKeys = apiKeys.filter(k => k.id !== id);
         toast.success('API Key deleted');
-      } else {
+      } else if (res.status !== 401) {
         toast.error('Failed to delete API key');
       }
     } catch (e) {
@@ -104,7 +105,7 @@
           apiKeys[index] = updated;
         }
         toast.success(`Key ${updated.enabled ? 'enabled' : 'disabled'}`);
-      } else {
+      } else if (res.status !== 401) {
         toast.error('Failed to update status');
       }
     } catch (e) {
