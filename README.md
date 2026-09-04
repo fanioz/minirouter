@@ -421,3 +421,11 @@ The dashboard's **CLI Tool** tab generates copy-paste configuration for CLI codi
 | OpenCode | Supported | `opencode.json` with `@ai-sdk/openai-compatible` |
 | Aider | Supported | `OPENAI_API_BASE` / `OPENAI_API_KEY` + `aider --model openai/<model>` |
 | Gemini CLI | Not supported | No custom OpenAI-compatible base URL upstream |
+
+## Documentation
+
+Full documentation lives under `docs/`, indexed at [`docs/index.md`](docs/index.md):
+
+- **Architecture** — [`docs/architecture.md`](docs/architecture.md) is the canonical system architecture.
+- **Design system** — [`docs/frontend/design/README.md`](docs/frontend/design/README.md) (Neutral Modern) is the visual source of truth.
+- **AI agents** — operating docs live in [`docs/agents/`](docs/agents/) (domain, issue tracker, triage labels); work is driven by stories in `docs/stories/` per [`AGENTS.md`](AGENTS.md).

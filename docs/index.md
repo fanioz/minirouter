@@ -1,130 +1,73 @@
 # MiniRouter Documentation Index
 
-> Auto-generated documentation index. Top-level categories; each category has its own `index.md` for deeper navigation. **Canonical architectural reference:** [`architecture.md`](./architecture.md). **Live design system:** [`frontend/design/`](./frontend/design/README.md).
+> Entry point for everything under `docs/`. The tree splits into **living documentation** (current architecture, current PRDs, stories, agent guidance, QA — what is true now) and **point-in-time layers** (`retrospectives/`, `reports/`, `reviews/`, `archive/` — kept for traceability, not maintained). **Canonical system architecture:** [`architecture.md`](./architecture.md). **Visual source of truth:** [`frontend/design/README.md`](./frontend/design/README.md).
 
-## Root Documents
+## Start here
 
-### [Architecture — System (Canonical)](./architecture.md)
-
-Current state of the MiniRouter backend (C# + SQLite + Svelte SPA) with AOT constraints, request flow, routing + circuit breaker, Anthropic↔OpenAI translation, persistence, presets, CLI, and known constraints. **Start here.**
-
-### [Architecture — System (Brownfield Snapshot)](./archive/system-architecture.md)
-
-Historical 2026-08-06 brownfield pass — kept as a reference for what was here before the API keys / presets / Anthropic translation work.
-
-### [Architecture — Dark Mode Epic](./archive/architecture-dark-mode.md)
-
-Technical architecture for the dark-mode UI overhaul (theme tokens, Tailwind configuration, `mode-watcher` integration).
-
-### [Architecture — CLI Restart Server](./archive/architecture-restart-server.md)
-
-Architecture for the `restart` CLI command: locating the running server, sending `POST /_shutdown`, spawning a fresh process.
-
-### [Brownfield Architecture](./archive/brownfield-architecture.md)
-
-Earlier pre-preset / pre-API-key snapshot of the system.
-
-### [Epic 1 Retrospective](./epic-retrospective.md)
-
-Retrospective on Epic 1: Provider Management Dashboard.
-
-### [Epic 5 Retrospective](./epic-5-retrospective.md)
-
-Retrospective on Epic 5: Dark Mode Support.
-
-### [Front-End Specification](./archive/specs/front-end-spec.md)
-
-UI/UX specification for the original Provider Management dashboard.
-
-### [PO Validation Report — Dark Mode](./po-validation-report.md)
-
-Product Owner validation report for the dark-mode epic.
-
-### [PRD — Brownfield Enhancement](./archive/prd-brownfield/prd.md)
-
-Product Requirements Document for the original brownfield enhancement (provider dashboard + management UI).
-
-### [PRD — Dark Mode](./archive/prd-features/prd-dark-mode.md)
-
-PRD for the dark-mode epic.
-
-### [PRD — Models Navigation](./archive/prd-features/prd-models-nav.md)
-
-PRD for the models navigation tab in the dashboard.
-
-### [PRD — Restart Server](./archive/prd-features/prd-restart-server.md)
-
-PRD for the CLI `restart` command.
-
-### [PRD — Combined Home and About](./archive/prd-features/prd-combined-home-about.md)
-
-Combined PRD for the home/about dashboard pages.
-
-### [Epic 11 — OpenAI Responses API Adapter](./prd/epic-11-responses-api-adapter.md)
-
-PRD for Codex CLI support via OpenAI Responses API translation layer.
-
-### [Epic 12 — Apply Configuration Button](./prd/epic-12-apply-configuration-button.md)
-
-PRD for one-click CLI tool setup with secure config file writes to Claude Code and Codex CLI user-level configs.
-
-### [Epic 13 — Model Chains](./prd/epic-13-model-chains.md)
-
-PRD for named fallback sequences: define `tier1 → [opus, kimi, glm]` once; callers use a single stable model name.
-
-### [UX Spec — Terminal Restart Server](./archive/specs/ux-terminal-restart-server.md)
-
-Terminal UX specification for the restart server CLI.
+- **[Architecture](./architecture.md)** — canonical architectural reference: current state of the MiniRouter backend (C# + SQLite + Svelte SPA) with AOT constraints, request flow, routing + circuit breaker, Anthropic↔OpenAI translation, persistence, presets, CLI, and known constraints.
+- **[Design system](./frontend/design/README.md)** — the **MiniRouter Neutral Modern** design system: tokens, previews, UI kit, and the design-agent workbench under `frontend/design/`.
+- **`stories/`** — development work is driven by stories in `docs/stories/` (see the root [`AGENTS.md`](../AGENTS.md)). Current epics: 10 (Claude Code / Codex CLI), 11 (Responses API adapter), 12 (Apply Configuration Button), 13 (Model Chains).
+- **Agent operating docs** — `docs/agents/` for AI agents: [`domain.md`](./agents/domain.md) (repo map, conventions, ADR policy), [`issue-tracker.md`](./agents/issue-tracker.md) (GitHub issue conventions), [`triage-labels.md`](./agents/triage-labels.md) (triage label roles).
+- **[QA](./qa/qa-report-project-review-2026-08-29.md)** — full project review report (2026-08-29) plus quality gates under `qa/gates/` (live gate: [`gates/13.1-model-chains.yml`](./qa/gates/13.1-model-chains.yml)).
 
 ## Architecture
 
-Documents within the `architecture/` directory — see [`architecture/index.md (archived scaffold)`](./archive/architecture-scaffold/index.md) for the per-document breakdown. Includes system/component/API design docs plus the Epic 5/8/9 architecture writeups.
+Current write-ups in `architecture/`:
 
-## Frontend
+- **[component-architecture.md](./architecture/component-architecture.md)** — maps the actual Svelte 5 + Tailwind 4 dashboard components onto the backend service layer (current structure, not proposed).
+- **[epic-5-dark-mode.md](./architecture/epic-5-dark-mode.md)** — dark-mode epic architecture: theme tokens, Tailwind configuration, `mode-watcher` integration.
+- **[epic-8-technical-debt.md](./architecture/epic-8-technical-debt.md)** — the **resulting architecture** of technical-debt round 1 (test compilation, atomic writes, error classification, capability flags, pricing).
+- **[epic-9-preset-providers.md](./architecture/epic-9-preset-providers.md)** — preset provider catalog: `Services/Presets/` with one-click enable endpoints.
+- **[api-key-management-architecture.md](./architecture/api-key-management-architecture.md)** — API key management: key CRUD, remote-management authentication, loopback exemption.
 
-Frontend specifications, accessibility/responsiveness requirements, and the **MiniRouter Neutral Modern** design system. See [`frontend/index.md (archived)`](./archive/frontend-spec/index.md) for the per-document breakdown.
+## PRDs (current)
 
-The design system itself (tokens, previews, applied kit) lives at [`frontend/design/`](./frontend/design/README.md) — single coral accent, warm paper + ink palette, Inter-only type.
+Product requirements documents in `prd/`:
 
-## PRD
+- **[epic-11-responses-api-adapter.md](./prd/epic-11-responses-api-adapter.md)** — Codex CLI support via an OpenAI Responses API translation layer.
+- **[epic-12-apply-configuration-button.md](./prd/epic-12-apply-configuration-button.md)** — one-click CLI tool setup with secure config-file writes to Claude Code and Codex CLI user-level configs.
+- **[epic-13-model-chains.md](./prd/epic-13-model-chains.md)** — named fallback sequences: define `tier1 → [opus, kimi, glm]` once; callers use a single stable model name.
+- **[api-key-management.md](./prd/api-key-management.md)** — administrative interface to generate, view, edit, and revoke API keys; secures the proxy endpoint.
+- **[api-key-copy-button.md](./prd/api-key-copy-button.md)** — quick "Copy" action for API key IDs from the API Keys list.
+- **[models-tab.md](./prd/models-tab.md)** — surfacing the aggregated `/models` list as a dedicated dashboard tab.
+- **[technical-debt-assessment.md](./prd/technical-debt-assessment.md)** — final technical-debt assessment with prioritized NFRs and decisions.
 
-Product Requirements Documents. See [`prd/index.md (archived brownfield generation)`](./archive/prd-brownfield/index.md) for the per-document breakdown.
+## Reports & reviews
 
-## Stories
+Historical analyst/QA outputs of the Aug-6 brownfield discovery — no longer maintained, but still cross-referenced by stories.
 
-Development stories grouped by epic. Per the index convention, this folder is a top-level section — browse its contents directly under `docs/stories/`.
+`reports/`:
 
-Active and recent epics:
+- **[9router-gap-analysis.md](./reports/9router-gap-analysis.md)** — gap analysis against the vendored 9Router reference.
+- **[TECHNICAL-DEBT-REPORT.md](./reports/TECHNICAL-DEBT-REPORT.md)** — original debt report (superseded by [`prd/technical-debt-assessment.md`](./prd/technical-debt-assessment.md)).
+- **[razor-cli-analysis.md](./reports/razor-cli-analysis.md)** — Razor + Spectre.Console CLI analysis.
 
-- **Epic 1** — Provider Management Dashboard (stories 1.1–1.5)
-- **Epic 2** — Razor + CLI provider management (stories 2.1–2.4)
-- **Epic 4** — Playground chatbox (story 4.1); model selector provider context (story 4.2)
-- **Epic 5** — Dark mode
-- **Epic 7** — Comma-separated fallback (story 7.1)
-- **Epic 8** — Technical debt round 1 (stories 8.1–8.7) — atomic writes, error classification, capability flags, Anthropic translation, pricing
-- **Epic 9** — Preset providers (story 9.1)
-- **Epic 10** — Claude Code and Codex CLI support (story 10.1) — x-api-key header, AUTH_PASSTHROUGH, /v1/models endpoint
-- **Epic 11** — OpenAI Responses API Adapter (story 11.1) — Codex CLI wire_api="responses" protocol translation
-- **Epic 12** — Apply Configuration Button (story 12.1) — one-click CLI tool setup with secure config file writes
-- **Epic 13** — Model Chains (story 13.1) — named fallback sequences: `tier1` → `[anthropic/opus, openrouter/kimi, openrouter/glm]`
-- Plus retrospective `epic-5-dark-mode.story.md`, `epic-capability-parity.md`, `epic-technical-debt.md`, and historical `story-1.1`–`story-1.4` writeups.
+`reviews/` — six Aug-6 discovery reviews: [qa-review.md](./reviews/qa-review.md), [qa-review-phase-2.md](./reviews/qa-review-phase-2.md), [qa-review-phase-3.md](./reviews/qa-review-phase-3.md), [qa-final-review.md](./reviews/qa-final-review.md), [db-specialist-review.md](./reviews/db-specialist-review.md), [ux-specialist-review.md](./reviews/ux-specialist-review.md).
 
-## Reports
+## Retrospectives
 
-Technical reports (gap analyses, debt summaries, framework comparisons) under `docs/reports/`:
+Point-in-time records that were never superseded — first-class history, not archive:
 
-- `9router-gap-analysis.md`
-- `TECHNICAL-DEBT-REPORT.md`
-- `razor-cli-analysis.md`
-
-## Reviews
-
-QA / specialist reviews for brownfield discovery and quality gates under `docs/reviews/`:
-
-- `db-specialist-review.md`
-- `qa-final-review.md`, `qa-review.md`, `qa-review-phase-2.md`, `qa-review-phase-3.md`
-- `ux-specialist-review.md`
+- **[epic-retrospective.md](./retrospectives/epic-retrospective.md)** — Epic 1: Provider Management Dashboard.
+- **[epic-5-retrospective.md](./retrospectives/epic-5-retrospective.md)** — Epic 5: Dark Mode Support.
+- **[po-validation-report.md](./retrospectives/po-validation-report.md)** — Product Owner validation of the dark-mode epic.
 
 ## Reference
 
-External reference implementations consulted during development, under `docs/reff/`. **Not project documentation** — provided for traceability only. Notable: `open-sse/` (an OmniRoute-style multi-provider router that informed the preset catalog, error classification, and circuit-breaker patterns).
+`reff/` — a vendored full clone of **9Router v0.5.50** (Node/Next.js reference implementation). **Gitignored and NOT project documentation** — kept for traceability only; consulted during the gap analysis and epics 7/8/9/11 (circuit breaker, presets, Responses API).
+
+## Archive
+
+Superseded generations and shipped-feature records under `archive/`. What moved where:
+
+| Location | Contents |
+|---|---|
+| [`archive/architecture-scaffold/`](./archive/architecture-scaffold/index.md) | Aug-6 brownfield architecture TOC + 12 section stubs (pre-UI, no-auth snapshot) |
+| [`archive/prd-brownfield/`](./archive/prd-brownfield/prd.md) | Aug-6 enhancement PRD (incl. former `docs/prd.md`) |
+| `archive/prd-features/` | Shipped feature PRDs — former root `prd-*.md` files plus `prd/epic-5-dark-mode.md` |
+| [`archive/frontend-spec/`](./archive/frontend-spec/index.md) | Aug-6 frontend spec fragments |
+| [`archive/specs/front-end-spec.md`](./archive/specs/front-end-spec.md), [`ux-terminal-restart-server.md`](./archive/specs/ux-terminal-restart-server.md) | Original front-end and terminal-UX specifications |
+| [`archive/brownfield-architecture.md`](./archive/brownfield-architecture.md) | Pre-preset / pre-API-key architecture snapshot |
+| [`archive/system-architecture.md`](./archive/system-architecture.md) | Aug-6 system snapshot (superseded by [`architecture.md`](./architecture.md)) |
+| [`archive/architecture-dark-mode.md`](./archive/architecture-dark-mode.md), [`architecture-restart-server.md`](./archive/architecture-restart-server.md) | Epic architecture write-ups for the shipped dark-mode / CLI-restart epics |
+| [`archive/technical-debt-DRAFT.md`](./archive/technical-debt-DRAFT.md) | Draft debt assessment (superseded by [`prd/technical-debt-assessment.md`](./prd/technical-debt-assessment.md)) |
