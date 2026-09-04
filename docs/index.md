@@ -12,11 +12,11 @@ Current state of the MiniRouter backend (C# + SQLite + Svelte SPA) with AOT cons
 
 Historical 2026-08-06 brownfield pass — kept as a reference for what was here before the API keys / presets / Anthropic translation work.
 
-### [Architecture — Dark Mode Epic](./architecture-dark-mode.md)
+### [Architecture — Dark Mode Epic](./archive/architecture-dark-mode.md)
 
 Technical architecture for the dark-mode UI overhaul (theme tokens, Tailwind configuration, `mode-watcher` integration).
 
-### [Architecture — CLI Restart Server](./architecture-restart-server.md)
+### [Architecture — CLI Restart Server](./archive/architecture-restart-server.md)
 
 Architecture for the `restart` CLI command: locating the running server, sending `POST /_shutdown`, spawning a fresh process.
 
@@ -32,7 +32,7 @@ Retrospective on Epic 1: Provider Management Dashboard.
 
 Retrospective on Epic 5: Dark Mode Support.
 
-### [Front-End Specification](./front-end-spec.md)
+### [Front-End Specification](./archive/specs/front-end-spec.md)
 
 UI/UX specification for the original Provider Management dashboard.
 
@@ -44,19 +44,19 @@ Product Owner validation report for the dark-mode epic.
 
 Product Requirements Document for the original brownfield enhancement (provider dashboard + management UI).
 
-### [PRD — Dark Mode](./prd-dark-mode.md)
+### [PRD — Dark Mode](./archive/prd-features/prd-dark-mode.md)
 
 PRD for the dark-mode epic.
 
-### [PRD — Models Navigation](./prd-models-nav.md)
+### [PRD — Models Navigation](./archive/prd-features/prd-models-nav.md)
 
 PRD for the models navigation tab in the dashboard.
 
-### [PRD — Restart Server](./prd-restart-server.md)
+### [PRD — Restart Server](./archive/prd-features/prd-restart-server.md)
 
 PRD for the CLI `restart` command.
 
-### [PRD — Combined Home and About](./prd-combined-home-about.md)
+### [PRD — Combined Home and About](./archive/prd-features/prd-combined-home-about.md)
 
 Combined PRD for the home/about dashboard pages.
 
@@ -72,7 +72,7 @@ PRD for one-click CLI tool setup with secure config file writes to Claude Code a
 
 PRD for named fallback sequences: define `tier1 → [opus, kimi, glm]` once; callers use a single stable model name.
 
-### [UX Spec — Terminal Restart Server](./ux-terminal-restart-server.md)
+### [UX Spec — Terminal Restart Server](./archive/specs/ux-terminal-restart-server.md)
 
 Terminal UX specification for the restart server CLI.
 
@@ -82,7 +82,7 @@ Documents within the `architecture/` directory — see [`architecture/index.md (
 
 ## Frontend
 
-Frontend specifications, accessibility/responsiveness requirements, and the **MiniRouter Neutral Modern** design system. See [`frontend/index.md`](./frontend/index.md) for the per-document breakdown.
+Frontend specifications, accessibility/responsiveness requirements, and the **MiniRouter Neutral Modern** design system. See [`frontend/index.md (archived)`](./archive/frontend-spec/index.md) for the per-document breakdown.
 
 The design system itself (tokens, previews, applied kit) lives at [`frontend/design/`](./frontend/design/README.md) — single coral accent, warm paper + ink palette, Inter-only type.
 

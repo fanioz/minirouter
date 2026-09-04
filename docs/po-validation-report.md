@@ -22,7 +22,7 @@
   3. *LocalStorage Blocking (Low)*: Users with strict privacy settings blocking localStorage might not have their theme preference saved.
 - **Mitigation Recommendations:**
   - Ensure the `mode-watcher` setup accurately follows its documentation to prevent FOUC.
-  - Rely strictly on Tailwind CSS variables and the provided color palette in `front-end-spec.md` for contrast compliance.
+  - Rely strictly on Tailwind CSS variables and the provided color palette in `docs/archive/specs/front-end-spec.md` for contrast compliance.
 - **Timeline Impact of Addressing Issues:** None. Risks are minimal and accounted for.
 - **Specific Integration Risks:** The single point of integration is applying the `dark` class to the `<html>` element and updating `tailwind.config.js`.
 

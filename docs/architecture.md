@@ -326,7 +326,7 @@ AOT cross-compile from macOS to Linux requires a Linux linker — build on Linux
 ## 14. Pointers
 
 - `docs/archive/brownfield-architecture.md` — earlier snapshot of the system before API keys / presets / Anthropic translation.
-- `docs/architecture-dark-mode.md` — frontend dark-mode epic.
-- `docs/architecture-restart-server.md` — CLI restart epic.
+- `docs/archive/architecture-dark-mode.md` — frontend dark-mode epic.
+- `docs/archive/architecture-restart-server.md` — CLI restart epic.
 - `docs/stories/` — per-story write-ups (Epic 5 = API keys, Epic 7 = comma-separated fallback, Epic 8 = technical debt round 1, Epic 9 = presets).
 - `docs/po-validation-report.md` — recent PO validation of the current docs.

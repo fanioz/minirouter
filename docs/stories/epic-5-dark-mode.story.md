@@ -1,7 +1,7 @@
 # Story: Epic 5 - Dark Mode Implementation
 
 ## Description
-Implement the dark mode feature as specified in `docs/prd-dark-mode.md` and designed in `docs/architecture-dark-mode.md`.
+Implement the dark mode feature as specified in `docs/archive/prd-features/prd-dark-mode.md` and designed in `docs/archive/architecture-dark-mode.md`.
 
 ## Tasks
 

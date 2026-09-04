@@ -3,9 +3,9 @@
 This directory contains two related sets of documents:
 
 1. **The original UI/UX specification** (this file's TOC below) — the provider-management dashboard brief, accessibility targets, responsiveness strategy, etc.
-2. **The MiniRouter Neutral Modern design system** ([`design/`](./design/README.md)) — a complete, source-backed package with tokens, previews, applied kit, and provenance. **This is the current source of truth for the dashboard's visual language.**
+2. **The MiniRouter Neutral Modern design system** ([`design/`](../../frontend/design/README.md)) — a complete, source-backed package with tokens, previews, applied kit, and provenance. **This is the current source of truth for the dashboard's visual language.**
 
-When building or reviewing frontend surfaces, read the [design system README](./design/README.md) first. The spec below is the original brief; the design package is what the implementation should follow.
+When building or reviewing frontend surfaces, read the [design system README](../../frontend/design/README.md) first. The spec below is the original brief; the design package is what the implementation should follow.
 
 ---
 
