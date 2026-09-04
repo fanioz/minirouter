@@ -23,13 +23,13 @@ providers.json
 
 # Dependencies (AIOX)
 node_modules/
-node_modules
 
 # Build & Logs (AIOX)
 dist/
 build/
 *.log
 logs/
+TestResults/
 
 # IDE & OS (AIOX)
 Thumbs.db
@@ -50,19 +50,10 @@ test_*.json
 
 
 # Runtime artifacts (added by cleanup)
-aot_run.log
-server.log
-server2.log
-test1_out.txt
-test2_out.txt
-minirouter.db
-.minirouter.pid
 REPOLORE.md
 providers.json.backup
-.aiox/
 
 # Backup file berisi API key asli — jangan pernah commit
-providers.json.bak
 providers.json.*
 
 # ── Public repo cleanup (2026-08-28) ──
@@ -74,6 +65,7 @@ providers.json.*
 .gemini/
 .codex/
 .kimi/
+.kiro/
 .antigravity/
 .agent/
 .github/
