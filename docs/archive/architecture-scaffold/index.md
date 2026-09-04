@@ -18,11 +18,7 @@
     - [New Technology Additions](./tech-stack-alignment.md#new-technology-additions)
   - [Data Models and Schema Changes](./data-models-and-schema-changes.md)
     - [Schema Integration Strategy](./data-models-and-schema-changes.md#schema-integration-strategy)
-  - [Component Architecture](./component-architecture.md)
-    - [New Components](./component-architecture.md#new-components)
-      - [Provider Dashboard List](./component-architecture.md#provider-dashboard-list)
-      - [Provider Form Modal](./component-architecture.md#provider-form-modal)
-    - [Component Interaction Diagram](./component-architecture.md#component-interaction-diagram)
+  - [Component Architecture](../../architecture/component-architecture.md) — still current: lives at docs/architecture/component-architecture.md, not archived with this scaffold
   - [API Design and Integration](./api-design-and-integration.md)
     - [API Integration Strategy](./api-design-and-integration.md#api-integration-strategy)
   - [Source Tree Integration](./source-tree-integration.md)
@@ -46,9 +42,9 @@
     - [Existing Security Measures](./security-integration.md#existing-security-measures)
     - [Enhancement Security Requirements](./security-integration.md#enhancement-security-requirements)
     - [Security Testing](./security-integration.md#security-testing)
-  - [Epic 5: Dark Mode](./epic-5-dark-mode.md)
-  - [Epic 8: Technical Debt Resolution](./epic-8-technical-debt.md)
-  - [Epic 9: Preset Providers](./epic-9-preset-providers.md)
+  - [Epic 5: Dark Mode](../../architecture/epic-5-dark-mode.md) — still current, not archived
+  - [Epic 8: Technical Debt Resolution](../../architecture/epic-8-technical-debt.md) — still current, not archived
+  - [Epic 9: Preset Providers](../../architecture/epic-9-preset-providers.md) — still current, not archived
   - [Checklist Results Report](./checklist-results-report.md)
   - [Next Steps](./next-steps.md)
     - [Story Manager Handoff](./next-steps.md#story-manager-handoff)

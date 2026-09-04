@@ -3,7 +3,7 @@
 ## Existing Project Overview
 
 ### Analysis Source
-Document-project output available at: `docs/brownfield-architecture.md`
+Document-project output available at: `../brownfield-architecture.md`
 
 ### Current Project State
 MiniRouter is currently an API-only backend service acting as a minimal ASP.NET Core reverse proxy supporting multiple OpenAI-compatible LLM providers. It uses round-robin routing and model-aware forwarding, compiled as a Native AOT binary for an extremely low-memory footprint and fast startup. There is currently no UI present.

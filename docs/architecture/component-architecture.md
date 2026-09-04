@@ -38,10 +38,10 @@ The SPA lives in `frontend/src/` and builds to `wwwroot/`. The exact route struc
 
 ### Design system
 
-The dashboard's visual language is governed by the **MiniRouter Neutral Modern** design system at [`docs/frontend/design/`](../../frontend/design/README.md). When implementing or reviewing a surface:
+The dashboard's visual language is governed by the **MiniRouter Neutral Modern** design system at [`docs/frontend/design/`](../frontend/design/README.md). When implementing or reviewing a surface:
 
-- **Tokens** live in [`colors_and_type.css`](../../frontend/design/colors_and_type.css) — `:root` for light, `html.dark` for dark. Single accent (`#E56A4A` coral), Inter-only type, JetBrains Mono for numerals.
-- **Component classes** (`.btn`, `.card`, `.kpi`, `.badge`, `.pill`, `.input`, `.drawer`, etc.) and shell dimensions (`268px` sidebar, `64px` topbar, `1360px` content max) are defined in [`DESIGN.md`](../../frontend/design/DESIGN.md) and exercised in [`ui_kits/app/`](../../frontend/design/ui_kits/app/README.md).
+- **Tokens** live in [`colors_and_type.css`](../frontend/design/colors_and_type.css) — `:root` for light, `html.dark` for dark. Single accent (`#E56A4A` coral), Inter-only type, JetBrains Mono for numerals.
+- **Component classes** (`.btn`, `.card`, `.kpi`, `.badge`, `.pill`, `.input`, `.drawer`, etc.) and shell dimensions (`268px` sidebar, `64px` topbar, `1360px` content max) are defined in [`DESIGN.md`](../frontend/design/DESIGN.md) and exercised in [`ui_kits/app/`](../frontend/design/ui_kits/app/README.md).
 - **Reuse rule:** copy markup from `ui_kits/app/components.html` rather than inventing new class names. Tokens are the source of truth — do not duplicate hex values.
 
 The design package also ships 9 preview cards in `docs/frontend/design/preview/` for visual proof of each token category.

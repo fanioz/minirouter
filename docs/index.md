@@ -8,7 +8,7 @@
 
 Current state of the MiniRouter backend (C# + SQLite + Svelte SPA) with AOT constraints, request flow, routing + circuit breaker, Anthropic↔OpenAI translation, persistence, presets, CLI, and known constraints. **Start here.**
 
-### [Architecture — System (Brownfield Snapshot)](./architecture/system-architecture.md)
+### [Architecture — System (Brownfield Snapshot)](./archive/system-architecture.md)
 
 Historical 2026-08-06 brownfield pass — kept as a reference for what was here before the API keys / presets / Anthropic translation work.
 
@@ -20,7 +20,7 @@ Technical architecture for the dark-mode UI overhaul (theme tokens, Tailwind con
 
 Architecture for the `restart` CLI command: locating the running server, sending `POST /_shutdown`, spawning a fresh process.
 
-### [Brownfield Architecture](./brownfield-architecture.md)
+### [Brownfield Architecture](./archive/brownfield-architecture.md)
 
 Earlier pre-preset / pre-API-key snapshot of the system.
 
@@ -40,7 +40,7 @@ UI/UX specification for the original Provider Management dashboard.
 
 Product Owner validation report for the dark-mode epic.
 
-### [PRD — Brownfield Enhancement](./prd.md)
+### [PRD — Brownfield Enhancement](./archive/prd-brownfield/prd.md)
 
 Product Requirements Document for the original brownfield enhancement (provider dashboard + management UI).
 
@@ -78,7 +78,7 @@ Terminal UX specification for the restart server CLI.
 
 ## Architecture
 
-Documents within the `architecture/` directory — see [`architecture/index.md`](./architecture/index.md) for the per-document breakdown. Includes system/component/API design docs plus the Epic 5/8/9 architecture writeups.
+Documents within the `architecture/` directory — see [`architecture/index.md (archived scaffold)`](./archive/architecture-scaffold/index.md) for the per-document breakdown. Includes system/component/API design docs plus the Epic 5/8/9 architecture writeups.
 
 ## Frontend
 
@@ -88,7 +88,7 @@ The design system itself (tokens, previews, applied kit) lives at [`frontend/des
 
 ## PRD
 
-Product Requirements Documents. See [`prd/index.md`](./prd/index.md) for the per-document breakdown.
+Product Requirements Documents. See [`prd/index.md (archived brownfield generation)`](./archive/prd-brownfield/index.md) for the per-document breakdown.
 
 ## Stories
 

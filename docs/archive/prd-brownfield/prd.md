@@ -3,11 +3,11 @@
 ## Intro Project Analysis and Context
 
 ### Existing Project Overview
-**Analysis Source**: Document-project output available at `docs/brownfield-architecture.md`
+**Analysis Source**: Document-project output available at `../brownfield-architecture.md`
 **Current Project State**: MininRouter acts as an intelligent proxy and router for LLM API providers (OpenAI, Anthropic). It is built with a .NET 10 Native AOT backend and a Svelte 5 + Tailwind CSS frontend.
 
 ### Available Documentation Analysis
-Using existing project analysis from document-project output (`docs/brownfield-architecture.md`).
+Using existing project analysis from document-project output (`../brownfield-architecture.md`).
 
 ### Enhancement Scope Definition
 **Enhancement Type**: UI/UX Overhaul
