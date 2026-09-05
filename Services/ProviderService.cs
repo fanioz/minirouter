@@ -233,7 +233,7 @@ public class ProviderService : IProviderService, IDisposable
                 if (_providers.Any(p => p.Id == dto.Id))
                     throw new ArgumentException($"Provider with id '{dto.Id}' already exists");
 
-                created = new Provider(dto.Id, dto.Name, dto.BaseUrl, dto.ApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, dto.PresetId);
+                created = new Provider(dto.Id, dto.Name, dto.BaseUrl, dto.ApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, dto.PresetId, dto.InputPricePerMillion, dto.OutputPricePerMillion);
                 _providers.Add(created);
                 snapshot = _providers.ToList();
             }
@@ -267,7 +267,7 @@ public class ProviderService : IProviderService, IDisposable
 
                 var existing = _providers[index];
                 var newApiKey = string.IsNullOrWhiteSpace(dto.ApiKey) ? existing.ApiKey : dto.ApiKey;
-                updated = new Provider(id, dto.Name, dto.BaseUrl, newApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, existing.PresetId);
+                updated = new Provider(id, dto.Name, dto.BaseUrl, newApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, existing.PresetId, dto.InputPricePerMillion, dto.OutputPricePerMillion);
                 _providers[index] = updated;
                 snapshot = _providers.ToList();
             }

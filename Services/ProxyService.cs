@@ -671,7 +671,13 @@ public class ProxyService : IProxyService
                     
                     if (tokensIn.HasValue && tokensOut.HasValue && !string.IsNullOrEmpty(actualModel))
                     {
-                        cost = PricingTable.CalculateCost(tokensIn.Value, tokensOut.Value, provider.Id, actualModel);
+                        cost = PricingTable.CalculateCost(
+                            tokensIn.Value, 
+                            tokensOut.Value, 
+                            provider.Id, 
+                            actualModel,
+                            provider.InputPricePerMillion,
+                            provider.OutputPricePerMillion);
                         costEstimated = estimated;
                     }
                     
@@ -708,7 +714,13 @@ public class ProxyService : IProxyService
         
         if (tokensIn.HasValue && tokensOut.HasValue && !string.IsNullOrEmpty(actualModel))
         {
-            cost = PricingTable.CalculateCost(tokensIn.Value, tokensOut.Value, provider.Id, actualModel);
+            cost = PricingTable.CalculateCost(
+                tokensIn.Value, 
+                tokensOut.Value, 
+                provider.Id, 
+                actualModel,
+                provider.InputPricePerMillion,
+                provider.OutputPricePerMillion);
             costEstimated = estimated;
         }
         

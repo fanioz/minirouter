@@ -14,7 +14,9 @@ public record Provider(
     List<string>? Models = null,
     bool? SupportsStreamOptions = null,
     bool? ReportsStreamUsage = null,
-    string? PresetId = null
+    string? PresetId = null,
+    double? InputPricePerMillion = null,
+    double? OutputPricePerMillion = null
 );
 
 public record CreateProviderDto(
@@ -27,7 +29,9 @@ public record CreateProviderDto(
     List<string>? Models = null,
     bool? SupportsStreamOptions = null,
     bool? ReportsStreamUsage = null,
-    string? PresetId = null
+    string? PresetId = null,
+    double? InputPricePerMillion = null,
+    double? OutputPricePerMillion = null
 );
 
 public record UpdateProviderDto(
@@ -38,7 +42,9 @@ public record UpdateProviderDto(
     string? Model = null,
     List<string>? Models = null,
     bool? SupportsStreamOptions = null,
-    bool? ReportsStreamUsage = null
+    bool? ReportsStreamUsage = null,
+    double? InputPricePerMillion = null,
+    double? OutputPricePerMillion = null
 );
 
 public record TestConnectionDto(
@@ -56,7 +62,9 @@ public record MaskedProvider(
     List<string>? Models,
     bool? SupportsStreamOptions,
     bool? ReportsStreamUsage,
-    string? PresetId
+    string? PresetId,
+    double? InputPricePerMillion,
+    double? OutputPricePerMillion
 );
 
 public enum CircuitStatus
@@ -154,7 +162,9 @@ public static class ProviderExtensions
         p.Models,
         p.SupportsStreamOptions,
         p.ReportsStreamUsage,
-        p.PresetId
+        p.PresetId,
+        p.InputPricePerMillion,
+        p.OutputPricePerMillion
     );
 }
 

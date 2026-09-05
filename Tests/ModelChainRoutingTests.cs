@@ -63,10 +63,10 @@ namespace MiniRouter.Tests
         };
 
         private static MaskedProvider FakeMasked(string id) =>
-            new MaskedProvider(id, id, "http://fake.local", null, true, null, null, null, null, null);
+            new MaskedProvider(id, id, "http://fake.local", null, true, null, null, null, null, null, null, null);
 
         private static Provider FakeProvider(string id) =>
-            new Provider(id, id, "http://fake.local", "key", true, null, null, null, null, null);
+            new Provider(id, id, "http://fake.local", "key", true, null, null, null, null, null, null, null);
 
         // ── 9.1 — chain name resolves to waterfall, first target succeeds ──────
 

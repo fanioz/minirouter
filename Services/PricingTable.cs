@@ -5,12 +5,12 @@ namespace MiniRouter.Services;
 
 /// <summary>
 /// Static pricing table for token cost calculation.
-/// Three-tier lookup: exact model match > pattern match > provider default.
-/// Unmatched models yield null cost (not zero) — documented as point-in-time snapshot.
+/// Four-tier lookup: exact model match > pattern match > provider-configured rate > null.
+/// Unmatched models without provider rates yield null cost (not zero).
 /// </summary>
 public static class PricingTable
 {
-    // Three-tier pricing lookup (exact, pattern, provider default)
+    // Static pricing lookup (exact match, pattern match)
     private static readonly List<(string Model, double InputRatePerMillion, double OutputRatePerMillion)> _rates = new()
     {
         ("gpt-4o-mini", 0.15, 0.60),
@@ -27,17 +27,22 @@ public static class PricingTable
         ("qwen-max", 0.70, 2.10),
         ("gpt-4o-*", 0.15, 0.60),
         ("claude-3-*", 3.00, 15.00),
-        ("gpt-4-*", 10.00, 30.00),
-        ("provider_default", 0.50, 2.00)
+        ("gpt-4-*", 10.00, 30.00)
     };
 
-    public static decimal? CalculateCost(int inputTokens, int outputTokens, string providerId, string modelName)
+    public static decimal? CalculateCost(
+        int inputTokens, 
+        int outputTokens, 
+        string providerId, 
+        string modelName,
+        double? providerInputRate = null,
+        double? providerOutputRate = null)
     {
         if (string.IsNullOrEmpty(modelName))
             return null;
         
-        var inputRate = FindInputRate(modelName);
-        var outputRate = FindOutputRate(modelName);
+        var inputRate = FindInputRate(modelName, providerInputRate);
+        var outputRate = FindOutputRate(modelName, providerOutputRate);
 
         // Both rates must be found or we return null
         if (inputRate == null || outputRate == null)
@@ -49,14 +54,16 @@ public static class PricingTable
         return inputCost + outputCost;
     }
 
-    private static double? FindInputRate(string modelName)
+    private static double? FindInputRate(string modelName, double? providerRate)
     {
+        // Tier 1: Exact match
         foreach (var rate in _rates)
         {
             if (modelName == rate.Model)
                 return rate.InputRatePerMillion;
         }
 
+        // Tier 2: Pattern match
         foreach (var rate in _rates)
         {
             if (rate.Model.EndsWith("*"))
@@ -67,18 +74,24 @@ public static class PricingTable
             }
         }
 
-        // No match found
+        // Tier 3: Provider-configured rate
+        if (providerRate.HasValue)
+            return providerRate.Value;
+
+        // Tier 4: No match
         return null;
     }
 
-    private static double? FindOutputRate(string modelName)
+    private static double? FindOutputRate(string modelName, double? providerRate)
     {
+        // Tier 1: Exact match
         foreach (var rate in _rates)
         {
             if (modelName == rate.Model)
                 return rate.OutputRatePerMillion;
         }
 
+        // Tier 2: Pattern match
         foreach (var rate in _rates)
         {
             if (rate.Model.EndsWith("*"))
@@ -89,7 +102,11 @@ public static class PricingTable
             }
         }
 
-        // No match found
+        // Tier 3: Provider-configured rate
+        if (providerRate.HasValue)
+            return providerRate.Value;
+
+        // Tier 4: No match
         return null;
     }
 }
