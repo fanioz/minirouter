@@ -5,7 +5,7 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import { authenticatedFetch } from '$lib/auth.js';
-  import { Plus, Trash2, Key, Copy, Check, Power, PowerOff, Edit2, X } from 'lucide-svelte';
+  import { Plus, Trash2, Key, Copy, Check, Power, PowerOff, Pen, X } from '@lucide/svelte';
 
   let apiKeys = $state([]);
   let isLoading = $state(true);
@@ -265,7 +265,7 @@
                     <div class="flex items-center gap-2">
                       <span class="text-[13px] font-bold" style="letter-spacing: -.01em;">{key.name}</span>
                       <button onclick={() => startEdit(key)} class="opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100" style="color: var(--muted);" title="Rename" aria-label="Rename key">
-                        <Edit2 class="h-3 w-3" />
+                        <Pen class="h-3 w-3" />
                       </button>
                     </div>
                   {/if}

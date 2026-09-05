@@ -1,4 +1,18 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+
+// Default global fetch stub: components that call fetch('/api/...') on mount
+// must never hit a real network in tests (Node's fetch rejects relative URLs
+// with ERR_INVALID_URL). Returns an empty JSON array, which is safe for both
+// list consumers ({#each}) and object consumers (property access yields
+// undefined). Tests that assign their own `global.fetch = vi.fn(...)` simply
+// override this default.
+vi.stubGlobal('fetch', vi.fn(() =>
+  Promise.resolve(new Response('[]', {
+    status: 200,
+    headers: { 'content-type': 'application/json' }
+  }))
+));
 
 // Polyfill matchMedia for jsdom (used by svelte-sonner Toaster)
 Object.defineProperty(window, 'matchMedia', {

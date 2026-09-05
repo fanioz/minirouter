@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
-  import { RefreshCw, Copy, Play } from 'lucide-svelte';
+  import { RefreshCw, Copy, Play } from '@lucide/svelte';
 
   let models = $state([]);
   let loading = $state(true);
