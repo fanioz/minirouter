@@ -22,7 +22,7 @@ public static class AnthropicResponseTranslator
                 var text = cv.GetValue<string>();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    content.Add(new JsonObject
+                    content.AddNode(new JsonObject
                     {
                         ["type"] = "text",
                         ["text"] = text
@@ -35,7 +35,7 @@ public static class AnthropicResponseTranslator
                 {
                     if (part?["type"]?.ToString() == "text")
                     {
-                        content.Add(new JsonObject
+                        content.AddNode(new JsonObject
                         {
                             ["type"] = "text",
                             ["text"] = part["text"]?.ToString() ?? ""
@@ -61,7 +61,7 @@ public static class AnthropicResponseTranslator
                         input = args.DeepClone();
                     }
 
-                    content.Add(new JsonObject
+                    content.AddNode(new JsonObject
                     {
                         ["type"] = "tool_use",
                         ["id"] = tc["id"]?.ToString() ?? "",
