@@ -10,6 +10,16 @@ using MiniRouter.Services;
 
 namespace MiniRouter.Tests
 {
+    /// <summary>
+    /// Isolates tests that mutate the MODEL_CHAINS_CONFIG_PATH environment variable
+    /// (Issue #11: prevents flakes when parallel test classes change env vars mid-run).
+    /// </summary>
+    [CollectionDefinition("ModelChainEnvVar")]
+    public class ModelChainEnvVarCollection
+    {
+    }
+
+    [Collection("ModelChainEnvVar")]
     public class ModelChainServiceTests : IDisposable
     {
         private readonly string _tempConfigFile;
