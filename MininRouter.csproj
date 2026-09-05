@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="MiniRouter.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <UpToDateCheckInput Include="frontend\src\**\*.*" />
     <UpToDateCheckInput Include="frontend\package.json" />
     <UpToDateCheckInput Include="frontend\vite.config.js" />

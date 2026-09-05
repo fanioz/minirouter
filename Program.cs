@@ -643,33 +643,12 @@ app.MapGet("/v1/models", async (IProviderService providerService, IModelChainSer
         return Results.Json(cachedList, AppJsonContext.Default.OpenAiModelList);
 
     var providers = await providerService.ListProvidersUnmaskedAsync();
-    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-    var data = new List<OpenAiModelEntry>();
-
-    foreach (var p in providers.Where(p => p.Enabled))
-    {
-        var models = p.Models ?? (p.Model != null ? new List<string> { p.Model } : new List<string>());
-        foreach (var m in models)
-        {
-            // Prefix with providerId/ only if the model ID doesn't already contain a /
-            var id = m.Contains('/') ? m : $"{p.Id}/{m}";
-            if (seen.Add(id))
-                data.Add(new OpenAiModelEntry(id, "model", p.Id));
-        }
-    }
-
-    // Story 13.1: Append model chain names as discoverable virtual models
-    foreach (var c in chainService.ListChains())
-    {
-        if (seen.Add(c.Name))
-            data.Add(new OpenAiModelEntry(c.Name, "model", "chain"));
-    }
+    var result = ModelsAggregator.Build(providers, chainService.ListChains());
 
     int ttl = 300;
     if (int.TryParse(config["MODELS_CACHE_TTL_SECONDS"] ?? Environment.GetEnvironmentVariable("MODELS_CACHE_TTL_SECONDS"), out int parsedTtl))
         ttl = parsedTtl;
 
-    var result = new OpenAiModelList("list", data);
     cache.Set(cacheKey, result, TimeSpan.FromSeconds(ttl));
     return Results.Json(result, AppJsonContext.Default.OpenAiModelList);
 });

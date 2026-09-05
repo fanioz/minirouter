@@ -11,39 +11,17 @@ namespace MiniRouter.Tests
 {
     /// <summary>
     /// Unit tests for the /v1/models endpoint aggregation logic (Story 10.1 AC 5).
-    /// Tests the model-list building algorithm independently of the HTTP layer.
+    /// Exercises the real aggregation builder (Services/ModelsAggregator) used by the
+    /// Program.cs GET /v1/models handler — no mirrored copy of the logic here.
     /// In the "ModelChainEnvVar" collection because the chain tests mutate
     /// MODEL_CHAINS_CONFIG_PATH (Issue #11).
     /// </summary>
     [Collection("ModelChainEnvVar")]
     public class ModelsEndpointTests
     {
-        // Mirrors the aggregation logic in Program.cs GET /v1/models (providers + chains)
+        // The real builder used by the Program.cs GET /v1/models handler
         private static OpenAiModelList BuildOpenAiModelList(IEnumerable<Provider> providers, IEnumerable<ModelChain>? chains = null)
-        {
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var data = new List<OpenAiModelEntry>();
-
-            foreach (var p in providers.Where(p => p.Enabled))
-            {
-                var models = p.Models ?? (p.Model != null ? new List<string> { p.Model } : new List<string>());
-                foreach (var m in models)
-                {
-                    var id = m.Contains('/') ? m : $"{p.Id}/{m}";
-                    if (seen.Add(id))
-                        data.Add(new OpenAiModelEntry(id, "model", p.Id));
-                }
-            }
-
-            // Story 13.1: Append model chain names as discoverable virtual models
-            foreach (var c in chains ?? Enumerable.Empty<ModelChain>())
-            {
-                if (seen.Add(c.Name))
-                    data.Add(new OpenAiModelEntry(c.Name, "model", "chain"));
-            }
-
-            return new OpenAiModelList("list", data);
-        }
+            => ModelsAggregator.Build(providers, chains);
 
         [Fact]
         public void GetV1Models_ShouldReturnObjectListFormat()

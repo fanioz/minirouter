@@ -158,7 +158,9 @@ public static class AnthropicStreamTranslator
                 results.Add(new(AnthropicStreamEventType.ContentBlockStop, new JsonObject { ["type"] = "content_block_stop", ["index"] = tc.BlockIndex }));
             }
 
-            var stopReason = MapFinishReason(finishReasonNode.ToString());
+            // Shared mapping (see AnthropicResponseTranslator.MapStopReason) so the
+            // streaming and non-streaming stop_reason translations stay identical.
+            var stopReason = AnthropicResponseTranslator.MapStopReason(finishReasonNode.ToString());
             var finalUsage = new JsonObject { ["input_tokens"] = state.UsagePromptTokens ?? 0, ["output_tokens"] = state.UsageCompletionTokens ?? 0 };
 
             var messageDelta = new JsonObject
@@ -174,14 +176,6 @@ public static class AnthropicStreamTranslator
 
         return results;
     }
-
-    private static string MapFinishReason(string reason) => reason switch
-    {
-        "stop" => "end_turn",
-        "length" => "max_tokens",
-        "tool_calls" => "tool_use",
-        _ => "end_turn"
-    };
 
     private static bool TryGetArray(JsonObject o, string key, out JsonArray arr)
     {

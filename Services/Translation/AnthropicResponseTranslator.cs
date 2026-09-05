@@ -96,6 +96,12 @@ public static class AnthropicResponseTranslator
         };
     }
 
+    /// <summary>
+    /// Single source of truth for the OpenAI <c>finish_reason</c> → Anthropic
+    /// <c>stop_reason</c> mapping. Shared by this translator (non-streaming) and
+    /// <see cref="AnthropicStreamTranslator"/> (streaming) so the two paths can
+    /// never diverge. Unrecognized or missing reasons map to "end_turn".
+    /// </summary>
     public static string MapStopReason(string? finishReason) => finishReason switch
     {
         "stop" => "end_turn",
