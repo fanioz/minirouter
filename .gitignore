@@ -71,9 +71,6 @@ providers.json.*
 .github/
 AGENTS.md
 
-# Dead code — Razor spike, di-exclude dari build
-Pages/
-
 # Build output — diregenerasi oleh hook BeforeBuild (npm run build)
 wwwroot/
 
