@@ -20,7 +20,7 @@ public class KeysListCommand : AsyncCommand<KeysListCommand.Settings>
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
-        // Load the schema explicitly since the web host hasn't done it
+        // Initialize the DB schema explicitly; the CLI path skips web-host startup
         await _apiKeyService.InitializeAsync();
         var keys = await _apiKeyService.ListApiKeysAsync();
 

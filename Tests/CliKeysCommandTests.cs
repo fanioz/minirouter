@@ -103,12 +103,22 @@ public class CliKeysCommandTests : IDisposable
         await _service.ValidateAndRecordUsageAsync(used.PlaintextKey); // stamps LastUsedAt
         await _service.UpdateApiKeyAsync(unused.Id, new UpdateApiKeyDto { Name = "spare", Enabled = false });
 
+        // ValidateAndRecordUsageAsync stamps last-used fire-and-forget, so wait for the
+        // DB row before rendering the list (the command must show the real timestamp)
+        ApiKey? persistedUsed = null;
+        for (var attempt = 0; attempt < 20 && persistedUsed?.LastUsedAt is null; attempt++)
+        {
+            persistedUsed = (await _service.ListApiKeysAsync()).FirstOrDefault(k => k.Id == used.Id);
+            if (persistedUsed?.LastUsedAt is null)
+                await Task.Delay(100);
+        }
+        Assert.NotNull(persistedUsed!.LastUsedAt);
+
         var command = new KeysListCommand(_service);
 
         AnsiConsole.Record();
         var exitCode = await command.ExecuteAsync(NewContext(), new KeysListCommand.Settings());
         var output = AnsiConsole.ExportText();
-
         Assert.Equal(0, exitCode);
 
         // Expected columns
@@ -117,12 +127,19 @@ public class CliKeysCommandTests : IDisposable
         Assert.Contains("Enabled", output);
         Assert.Contains("Last Used", output);
 
-        // Row content: prefixes, names, disabled marker, never-used marker
+        // Row content: 8-char prefixes, names, enabled/disabled, last-used values
+        Assert.Equal(8, used.KeyPrefix.Length);
         Assert.Contains(used.KeyPrefix, output);
         Assert.Contains(unused.KeyPrefix, output);
         Assert.Contains("ci-runner", output);
         Assert.Contains("spare", output);
-        Assert.Contains("Never", output);
+        var lines = output.Split('\n').Select(l => l.Trim()).ToList();
+        Assert.Contains(lines, l => l.Contains("ci-runner") && l.Contains("Yes"));
+        Assert.Contains(lines, l => l.Contains("spare") && l.Contains("No"));
+        Assert.Contains("Never", output); // unused key has no last-used
+        Assert.Contains(
+            persistedUsed.LastUsedAt!.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm"),
+            output); // used key's timestamp renders
         Assert.DoesNotContain(used.PlaintextKey, output); // full key must never be listed
     }
 }

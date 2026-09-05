@@ -31,7 +31,7 @@ public class KeysCreateCommand : AsyncCommand<KeysCreateCommand.Settings>
             return 1;
         }
 
-        // Load the schema explicitly since the web host hasn't done it
+        // Initialize the DB schema explicitly; the CLI path skips web-host startup
         await _apiKeyService.InitializeAsync();
         var created = await _apiKeyService.CreateApiKeyAsync(new CreateApiKeyDto { Name = settings.Name });
 
