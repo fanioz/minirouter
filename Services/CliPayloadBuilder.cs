@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using MiniRouter.Services.Translation;
 
 namespace MiniRouter.Services;
 
@@ -16,17 +17,20 @@ public static class CliPayloadBuilder
     /// </summary>
     public static string BuildChatPayloadJson(string model, string prompt)
     {
+        // JsonArray collection initializers bind to the trim-annotated generic
+        // Add<T> (IL2026/IL3050), so inserts go through AddNode instead. See #10.
+        var message = new JsonObject
+        {
+            ["role"] = "user",
+            ["content"] = prompt
+        };
+        var messages = new JsonArray();
+        messages.AddNode(message);
+
         var payload = new JsonObject
         {
             ["model"] = model,
-            ["messages"] = new JsonArray
-            {
-                new JsonObject
-                {
-                    ["role"] = "user",
-                    ["content"] = prompt
-                }
-            }
+            ["messages"] = messages
         };
         return payload.ToJsonString();
     }
