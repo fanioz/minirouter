@@ -66,6 +66,7 @@ providers.json.*
 .codex/
 .kimi/
 .kiro/
+.zcode/
 .antigravity/
 .agent/
 .github/
