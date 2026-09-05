@@ -1,8 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { toast } from 'svelte-sonner';
-  import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, X } from 'lucide-svelte';
-  import * as Dialog from '$lib/components/ui/dialog';
+  import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, X } from '@lucide/svelte';
   import { apiKeyStore } from '$lib/stores/apiKeyStore';
   import { authenticatedFetch } from '$lib/auth.js';
 
