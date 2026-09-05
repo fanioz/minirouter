@@ -15,10 +15,6 @@
     <Compile Remove="frontend\**" />
     <Content Remove="frontend\**" />
     <None Remove="frontend\**" />
-
-    <Compile Remove="Pages\**" />
-    <Content Remove="Pages\**" />
-    <None Remove="Pages\**" />
   </ItemGroup>
 
   <ItemGroup>

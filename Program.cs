@@ -89,17 +89,8 @@ if (isCliMode)
     
     var proxy = cliApp.Services.GetRequiredService<IProxyService>();
     
-    var payloadObjString = $$"""
-    {
-        "model": "{{cliModel}}",
-        "messages": [
-            {
-                "role": "user",
-                "content": {{JsonSerializer.Serialize(cliPrompt, typeof(string), AppJsonContext.Default)}}
-            }
-        ]
-    }
-    """;
+    // JsonNode-based payload: quotes/newlines in the model name or prompt are escaped correctly
+    var payloadObjString = CliPayloadBuilder.BuildChatPayloadJson(cliModel, cliPrompt);
     
     var proxyReq = new ProxyExecutionRequest
     {
