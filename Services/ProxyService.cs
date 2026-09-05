@@ -250,13 +250,20 @@ public class ProxyService : IProxyService
         {
             var respJson = System.Text.Encoding.UTF8.GetString(result.ResponseBytes);
             var respNode = JsonNode.Parse(respJson);
-            
-            try
+
+            if (respNode != null)
             {
-                var anthropicResp = AnthropicResponseTranslator.ToAnthropic(respNode, openaiReq["model"]?.ToString() ?? "");
-                await ctx.Response.BodyWriter.WriteAsync(System.Text.Encoding.UTF8.GetBytes(anthropicResp.ToJsonString()), ct);
+                try
+                {
+                    var anthropicResp = AnthropicResponseTranslator.ToAnthropic(respNode, openaiReq["model"]?.ToString() ?? "");
+                    await ctx.Response.BodyWriter.WriteAsync(System.Text.Encoding.UTF8.GetBytes(anthropicResp.ToJsonString()), ct);
+                }
+                catch
+                {
+                    await ctx.Response.BodyWriter.WriteAsync(result.ResponseBytes, ct);
+                }
             }
-            catch
+            else
             {
                 await ctx.Response.BodyWriter.WriteAsync(result.ResponseBytes, ct);
             }

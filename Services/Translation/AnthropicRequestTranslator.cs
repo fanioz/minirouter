@@ -21,7 +21,7 @@ public static class AnthropicRequestTranslator
             var systemText = ExtractText(system);
             if (!string.IsNullOrEmpty(systemText))
             {
-                messages.Add(new JsonObject
+                messages.AddNode(new JsonObject
                 {
                     ["role"] = "system",
                     ["content"] = systemText
@@ -39,7 +39,7 @@ public static class AnthropicRequestTranslator
 
             if (content is JsonValue v && v.GetValueKind() == JsonValueKind.String)
             {
-                messages.Add(new JsonObject
+                messages.AddNode(new JsonObject
                 {
                     ["role"] = role,
                     ["content"] = v.GetValue<string>()
@@ -49,7 +49,9 @@ public static class AnthropicRequestTranslator
 
             var parts = new JsonArray();
             var toolCalls = new JsonArray();
-            var toolMessages = new JsonArray();
+            // Plain list (not JsonArray): tool messages are moved into `messages`
+            // below, and a JsonNode cannot be re-parented out of a JsonArray.
+            var toolMessages = new List<JsonObject>();
 
             foreach (var block in content.AsArray())
             {
@@ -57,7 +59,7 @@ public static class AnthropicRequestTranslator
                 switch (block["type"]?.ToString())
                 {
                     case "text":
-                        parts.Add(new JsonObject
+                        parts.AddNode(new JsonObject
                         {
                             ["type"] = "text",
                             ["text"] = block["text"]?.ToString() ?? ""
@@ -70,7 +72,7 @@ public static class AnthropicRequestTranslator
                         {
                             var mediaType = src?["media_type"]?.ToString() ?? "image/jpeg";
                             var data = src?["data"]?.ToString() ?? "";
-                            parts.Add(new JsonObject
+                            parts.AddNode(new JsonObject
                             {
                                 ["type"] = "image_url",
                                 ["image_url"] = new JsonObject
@@ -82,7 +84,7 @@ public static class AnthropicRequestTranslator
                         break;
 
                     case "tool_use":
-                        toolCalls.Add(new JsonObject
+                        toolCalls.AddNode(new JsonObject
                         {
                             ["id"] = block["id"]?.ToString() ?? "",
                             ["type"] = "function",
@@ -123,10 +125,10 @@ public static class AnthropicRequestTranslator
 
             if (toolMessages.Count > 0)
             {
-                foreach (var tm in toolMessages) messages.Add(tm);
+                foreach (var tm in toolMessages) messages.AddNode(tm);
                 if (parts.Count > 0)
                 {
-                    messages.Add(new JsonObject
+                    messages.AddNode(new JsonObject
                     {
                         ["role"] = role == "assistant" ? "assistant" : "user",
                         ["content"] = parts.Count == 1 ? parts[0]?["text"]?.ToString() : parts
@@ -144,11 +146,11 @@ public static class AnthropicRequestTranslator
                 {
                     m["content"] = parts.Count == 1 ? parts[0]?["text"]?.ToString() : parts;
                 }
-                messages.Add(m);
+                messages.AddNode(m);
             }
             else if (parts.Count > 0)
             {
-                messages.Add(new JsonObject
+                messages.AddNode(new JsonObject
                 {
                     ["role"] = role,
                     ["content"] = parts.Count == 1 && parts[0]?["type"]?.ToString() == "text"
@@ -166,11 +168,11 @@ public static class AnthropicRequestTranslator
         };
 
         // max_tokens is required in Anthropic; pass through, never invent a default
-        if (req["max_tokens"] != null)
-            openaiReq["max_tokens"] = req["max_tokens"].GetValue<int>();
+        if (req["max_tokens"] is { } maxTokens)
+            openaiReq["max_tokens"] = maxTokens.GetValue<int>();
 
-        if (req["temperature"] != null)
-            openaiReq["temperature"] = req["temperature"].GetValue<double>();
+        if (req["temperature"] is { } temperature)
+            openaiReq["temperature"] = temperature.GetValue<double>();
 
         if (req["stop_sequences"] is JsonArray stopSeqs && stopSeqs.Count > 0)
         {
@@ -183,7 +185,7 @@ public static class AnthropicRequestTranslator
             foreach (var tool in tools)
             {
                 if (tool == null) continue;
-                openaiTools.Add(new JsonObject
+                openaiTools.AddNode(new JsonObject
                 {
                     ["type"] = "function",
                     ["function"] = new JsonObject
