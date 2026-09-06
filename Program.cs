@@ -153,7 +153,12 @@ if (args.Length > 0)
         registrations.AddSingleton<ITerminalFeedback, TerminalFeedback>();
         registrations.AddSingleton<IProcessLocator, ProcessLocator>();
         registrations.AddSingleton<IServerProcessManager, ServerProcessManager>();
-        registrations.AddSingleton<IConfiguration>(_ => new ConfigurationBuilder().AddEnvironmentVariables().Build());
+        registrations.AddSingleton<IConfiguration>(_ => new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build());
         registrations.AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()));
         registrations.AddSingleton<IApiKeyService, ApiKeyService>();
 
