@@ -4,6 +4,11 @@ using System.Text.Json.Serialization;
 
 namespace MiniRouter.Models;
 
+/// <summary>
+/// Represents a provider configuration with optional pricing rates.
+/// </summary>
+/// <param name="InputPricePerMillion">Optional provider-configured input price per million tokens, used as a pricing fallback when no static rate matches.</param>
+/// <param name="OutputPricePerMillion">Optional provider-configured output price per million tokens, used as a pricing fallback when no static rate matches.</param>
 public record Provider(
     string Id,
     string Name,
@@ -19,6 +24,11 @@ public record Provider(
     double? OutputPricePerMillion = null
 );
 
+/// <summary>
+/// Data transfer object for creating a new provider.
+/// </summary>
+/// <param name="InputPricePerMillion">Optional provider-configured input price per million tokens, used as a pricing fallback when no static rate matches.</param>
+/// <param name="OutputPricePerMillion">Optional provider-configured output price per million tokens, used as a pricing fallback when no static rate matches.</param>
 public record CreateProviderDto(
     string Id,
     string Name,
@@ -34,6 +44,11 @@ public record CreateProviderDto(
     double? OutputPricePerMillion = null
 );
 
+/// <summary>
+/// Data transfer object for updating an existing provider.
+/// </summary>
+/// <param name="InputPricePerMillion">Optional provider-configured input price per million tokens, used as a pricing fallback when no static rate matches.</param>
+/// <param name="OutputPricePerMillion">Optional provider-configured output price per million tokens, used as a pricing fallback when no static rate matches.</param>
 public record UpdateProviderDto(
     string Name,
     string BaseUrl,
@@ -52,6 +67,11 @@ public record TestConnectionDto(
     string ApiKey
 );
 
+/// <summary>
+/// Provider configuration with masked API key for safe exposure via API.
+/// </summary>
+/// <param name="InputPricePerMillion">Optional provider-configured input price per million tokens, used as a pricing fallback when no static rate matches.</param>
+/// <param name="OutputPricePerMillion">Optional provider-configured output price per million tokens, used as a pricing fallback when no static rate matches.</param>
 public record MaskedProvider(
     string Id,
     string Name,
@@ -152,6 +172,11 @@ public record ErrorResponse(string Error);
 
 public static class ProviderExtensions
 {
+    /// <summary>
+    /// Creates a masked version of the provider with the API key partially redacted for safe exposure via API.
+    /// </summary>
+    /// <param name="p">The provider to mask.</param>
+    /// <returns>A masked provider with all fields copied except the API key, which is partially redacted.</returns>
     public static MaskedProvider Mask(this Provider p) => new(
         p.Id,
         p.Name,

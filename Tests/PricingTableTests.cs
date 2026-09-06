@@ -23,6 +23,9 @@ public class PricingTableTests
         Assert.Equal(0.75m, cost);
     }
 
+    /// <summary>
+    /// Verifies that provider-configured rates are used as a fallback when no static table match exists.
+    /// </summary>
     [Fact]
     public void ProviderRate_UsedWhenNoStaticMatch()
     {
@@ -65,6 +68,9 @@ public class PricingTableTests
         Assert.True(sum > 0);
     }
 
+    /// <summary>
+    /// Verifies that unknown models without provider-configured rates return null cost.
+    /// </summary>
     [Fact]
     public void UnknownModel_WithoutProviderRate_ReturnsNull()
     {
@@ -92,6 +98,9 @@ public class PricingTableTests
         Assert.Single(costs.Where(c => c.HasValue));
     }
 
+    /// <summary>
+    /// Verifies that static table rates take precedence over provider-configured rates for known models.
+    /// </summary>
     [Fact]
     public void SameModel_DifferentProviders_DifferentCosts()
     {
@@ -104,6 +113,9 @@ public class PricingTableTests
         Assert.Equal(0.75m, costProviderB); // Static table overrides provider rate
     }
 
+    /// <summary>
+    /// Verifies that custom models not in the static table use provider-configured rates.
+    /// </summary>
     [Fact]
     public void CustomModel_UsesProviderRate()
     {
@@ -124,6 +136,9 @@ public class PricingTableTests
         Assert.Null(cost);
     }
 
+    /// <summary>
+    /// Verifies that custom models without provider-configured rates return null cost.
+    /// </summary>
     [Fact]
     public void CustomModel_NoProviderRate_ReturnsNull()
     {
@@ -133,6 +148,9 @@ public class PricingTableTests
         Assert.Null(cost);
     }
 
+    /// <summary>
+    /// Verifies that static table rates always take precedence over provider-configured rates when both are available.
+    /// </summary>
     [Fact]
     public void StaticTable_TakesPrecedence_OverProviderRate()
     {

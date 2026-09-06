@@ -62,9 +62,19 @@ namespace MiniRouter.Tests
             ContentType = "application/json"
         };
 
+        /// <summary>
+        /// Creates a fake masked provider for testing purposes.
+        /// </summary>
+        /// <param name="id">The provider identifier.</param>
+        /// <returns>A minimal masked provider instance.</returns>
         private static MaskedProvider FakeMasked(string id) =>
             new MaskedProvider(id, id, "http://fake.local", null, true, null, null, null, null, null, null, null);
 
+        /// <summary>
+        /// Creates a fake provider for testing purposes.
+        /// </summary>
+        /// <param name="id">The provider identifier.</param>
+        /// <returns>A minimal provider instance.</returns>
         private static Provider FakeProvider(string id) =>
             new Provider(id, id, "http://fake.local", "key", true, null, null, null, null, null, null, null);
 

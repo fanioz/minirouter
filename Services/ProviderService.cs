@@ -217,6 +217,11 @@ public class ProviderService : IProviderService, IDisposable
         }
     }
 
+    /// <summary>
+    /// Creates a new provider with the specified configuration, including optional provider-configured pricing rates.
+    /// </summary>
+    /// <param name="dto">Provider creation data transfer object containing all configuration fields.</param>
+    /// <returns>The newly created provider.</returns>
     public async Task<Provider> CreateProviderAsync(CreateProviderDto dto)
     {
         await _fileLock.WaitAsync();
@@ -254,6 +259,12 @@ public class ProviderService : IProviderService, IDisposable
         }
     }
 
+    /// <summary>
+    /// Updates an existing provider's configuration, including optional provider-configured pricing rates.
+    /// </summary>
+    /// <param name="id">The provider identifier.</param>
+    /// <param name="dto">Provider update data transfer object containing fields to update.</param>
+    /// <returns>The updated provider.</returns>
     public async Task<Provider> UpdateProviderAsync(string id, UpdateProviderDto dto)
     {
         await _fileLock.WaitAsync();

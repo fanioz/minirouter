@@ -30,10 +30,22 @@ public static class PricingTable
         ("gpt-4-*", 10.00, 30.00)
     };
 
+    /// <summary>
+    /// Calculates the cost of a completion using a four-tier lookup strategy:
+    /// exact model match > pattern match > provider-configured rate > null.
+    /// Returns null if no pricing information is available.
+    /// </summary>
+    /// <param name="inputTokens">Number of input tokens consumed.</param>
+    /// <param name="outputTokens">Number of output tokens generated.</param>
+    /// <param name="providerId">Provider identifier (for logging/context).</param>
+    /// <param name="modelName">Model name to look up in the pricing table.</param>
+    /// <param name="providerInputRate">Optional provider-configured input rate (USD per million tokens) used as fallback when no static match exists.</param>
+    /// <param name="providerOutputRate">Optional provider-configured output rate (USD per million tokens) used as fallback when no static match exists.</param>
+    /// <returns>Total cost in USD, or null if no pricing information is available.</returns>
     public static decimal? CalculateCost(
-        int inputTokens, 
-        int outputTokens, 
-        string providerId, 
+        int inputTokens,
+        int outputTokens,
+        string providerId,
         string modelName,
         double? providerInputRate = null,
         double? providerOutputRate = null)
@@ -54,6 +66,12 @@ public static class PricingTable
         return inputCost + outputCost;
     }
 
+    /// <summary>
+    /// Finds the input token rate for a model using tiered lookup: exact match, pattern match, provider-configured rate, or null.
+    /// </summary>
+    /// <param name="modelName">The model name to look up.</param>
+    /// <param name="providerRate">Optional provider-configured input rate (USD per million tokens) used as fallback.</param>
+    /// <returns>Input rate per million tokens, or null if no match is found.</returns>
     private static double? FindInputRate(string modelName, double? providerRate)
     {
         // Tier 1: Exact match
@@ -82,6 +100,12 @@ public static class PricingTable
         return null;
     }
 
+    /// <summary>
+    /// Finds the output token rate for a model using tiered lookup: exact match, pattern match, provider-configured rate, or null.
+    /// </summary>
+    /// <param name="modelName">The model name to look up.</param>
+    /// <param name="providerRate">Optional provider-configured output rate (USD per million tokens) used as fallback.</param>
+    /// <returns>Output rate per million tokens, or null if no match is found.</returns>
     private static double? FindOutputRate(string modelName, double? providerRate)
     {
         // Tier 1: Exact match

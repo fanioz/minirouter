@@ -428,6 +428,15 @@ public class ProxyService : IProxyService
         return lastResult ?? new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status502BadGateway, ErrorMessage = "All retries exhausted" };
     }
 
+    /// <summary>
+    /// Executes a completion request against a single provider, handling both streaming and non-streaming responses,
+    /// token usage tracking, cost calculation (including provider-configured rates), and circuit breaker state.
+    /// </summary>
+    /// <param name="provider">The provider to send the request to.</param>
+    /// <param name="targetModelName">The model name to use for this request.</param>
+    /// <param name="request">The proxy execution request containing the client's original request details.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The execution result including success status, response data, and token usage.</returns>
     private async Task<ProxyExecutionResult> ExecuteSingleProviderAsync(Provider provider, string? targetModelName, ProxyExecutionRequest request, CancellationToken ct)
     {
         JsonNode? reqNode = null;
