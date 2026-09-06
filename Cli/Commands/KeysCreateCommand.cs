@@ -35,7 +35,7 @@ public class KeysCreateCommand : AsyncCommand<KeysCreateCommand.Settings>
         await _apiKeyService.InitializeAsync();
         var created = await _apiKeyService.CreateApiKeyAsync(new CreateApiKeyDto { Name = settings.Name });
 
-        AnsiConsole.MarkupLine($"[green]API key '{created.Name}' created ({created.Id}).[/]");
+        AnsiConsole.MarkupLine($"[green]API key '{Markup.Escape(created.Name)}' created ({created.Id}).[/]");
         AnsiConsole.WriteLine();
         // Key format is sk- + lowercase hex, so it cannot collide with Spectre markup
         AnsiConsole.MarkupLine($"[bold]{created.PlaintextKey}[/]");
