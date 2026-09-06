@@ -101,6 +101,31 @@ namespace MiniRouter.Tests
             Assert.Contains("/", ex.Message);
         }
 
+        [Fact]
+        public async Task CreateAndUpdateChain_MultiSlashTarget_ThrowsArgumentException()
+        {
+            var service = CreateService();
+            await service.LoadChainsAsync();
+
+            var createException = await Assert.ThrowsAsync<ArgumentException>(() =>
+                service.CreateChainAsync(new CreateModelChainDto(
+                    "invalid", null, new List<string> { "provider/model/variant" }
+                ))
+            );
+            Assert.Contains("exactly one", createException.Message, StringComparison.OrdinalIgnoreCase);
+
+            await service.CreateChainAsync(new CreateModelChainDto(
+                "tier1", null, new List<string> { "provider/model" }
+            ));
+
+            var updateException = await Assert.ThrowsAsync<ArgumentException>(() =>
+                service.UpdateChainAsync("tier1", new UpdateModelChainDto(
+                    null, new List<string> { "provider/model/variant" }
+                ))
+            );
+            Assert.Contains("exactly one", updateException.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
         // 8.4 — update description + models, verify name unchanged
         [Fact]
         public async Task UpdateChain_ExistingName_PreservesName()

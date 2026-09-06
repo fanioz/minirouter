@@ -131,18 +131,7 @@ public class ModelChainService : IModelChainService, IDisposable
         if (dto.Name.Contains('/'))
             throw new ArgumentException("Chain name must not contain '/' character");
 
-        // Validate model targets
-        var validationErrors = new List<string>();
-        if (dto.Models != null)
-        {
-            foreach (var model in dto.Models)
-            {
-                if (string.IsNullOrWhiteSpace(model))
-                    validationErrors.Add("Empty model target");
-                else if (!model.Contains('/'))
-                    validationErrors.Add($"Model target '{model}' must contain '/' (providerId/modelName)");
-            }
-        }
+        var validationErrors = ValidateModelTargets(dto.Models);
 
         if (validationErrors.Count > 0)
             throw new ArgumentException($"Invalid chain: {string.Join("; ", validationErrors)}");
@@ -201,18 +190,7 @@ public class ModelChainService : IModelChainService, IDisposable
 
                 var existing = _chains[index];
 
-                // Validate model targets
-                var validationErrors = new List<string>();
-                if (dto.Models != null)
-                {
-                    foreach (var model in dto.Models)
-                    {
-                        if (string.IsNullOrWhiteSpace(model))
-                            validationErrors.Add("Empty model target");
-                        else if (!model.Contains('/'))
-                            validationErrors.Add($"Model target '{model}' must contain '/' (providerId/modelName)");
-                    }
-                }
+                var validationErrors = ValidateModelTargets(dto.Models);
 
                 if (validationErrors.Count > 0)
                     throw new ArgumentException($"Invalid chain: {string.Join("; ", validationErrors)}");
@@ -271,6 +249,23 @@ public class ModelChainService : IModelChainService, IDisposable
         {
             _fileLock.Release();
         }
+    }
+
+    private static List<string> ValidateModelTargets(IEnumerable<string>? models)
+    {
+        var validationErrors = new List<string>();
+        if (models == null)
+            return validationErrors;
+
+        foreach (var model in models)
+        {
+            if (string.IsNullOrWhiteSpace(model))
+                validationErrors.Add("Empty model target");
+            else if (model.Count(c => c == '/') != 1)
+                validationErrors.Add($"Model target '{model}' must contain exactly one '/' (providerId/modelName)");
+        }
+
+        return validationErrors;
     }
 
     private string GetTempPath() => _configPath + ".tmp";
