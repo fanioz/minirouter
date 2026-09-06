@@ -382,6 +382,11 @@ public class ProxyService : IProxyService
         return lastResult ?? new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status502BadGateway, ErrorMessage = "All fallback models exhausted" };
     }
 
+    /// <summary>
+    /// Attempts to execute a request through multiple providers selected in round-robin order.
+    /// </summary>
+    /// <param name="requestedModel">The model to use when selecting eligible providers.</param>
+    /// <returns>The first successful or unrecoverable result, or the last failure after provider attempts are exhausted.</returns>
     private async Task<ProxyExecutionResult> HandleRoundRobinExecutionAsync(string? requestedModel, ProxyExecutionRequest request, CancellationToken ct)
     {
         int maxRetries = 2;
@@ -436,7 +441,13 @@ public class ProxyService : IProxyService
     /// <param name="targetModelName">The model name to use for this request.</param>
     /// <param name="request">The proxy execution request containing the client's original request details.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>The execution result including success status, response data, and token usage.</returns>
+    /// <summary>
+    /// Sends a completion request to a provider and collects the response, usage data, and cost information.
+    /// </summary>
+    /// <param name="provider">The provider that receives the request.</param>
+    /// <param name="targetModelName">The model name to use when routing to a specific provider model.</param>
+    /// <param name="request">The proxy request, including the request body, headers, and streaming configuration.</param>
+    /// <returns>The execution result containing the upstream response, status, usage data, and cost information.</returns>
     private async Task<ProxyExecutionResult> ExecuteSingleProviderAsync(Provider provider, string? targetModelName, ProxyExecutionRequest request, CancellationToken ct)
     {
         JsonNode? reqNode = null;

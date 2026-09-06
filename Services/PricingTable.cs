@@ -41,7 +41,15 @@ public static class PricingTable
     /// <param name="modelName">Model name to look up in the pricing table.</param>
     /// <param name="providerInputRate">Optional provider-configured input rate (USD per million tokens) used as fallback when no static match exists.</param>
     /// <param name="providerOutputRate">Optional provider-configured output rate (USD per million tokens) used as fallback when no static match exists.</param>
-    /// <returns>Total cost in USD, or null if no pricing information is available.</returns>
+    /// <summary>
+    /// Calculates the total cost of processing input and output tokens for a model.
+    /// </summary>
+    /// <param name="inputTokens">The number of input tokens.</param>
+    /// <param name="outputTokens">The number of output tokens.</param>
+    /// <param name="modelName">The model name used to determine pricing.</param>
+    /// <param name="providerInputRate">The provider-configured input rate per million tokens.</param>
+    /// <param name="providerOutputRate">The provider-configured output rate per million tokens.</param>
+    /// <returns>The total cost in USD, or null when the model name is empty or either rate is unavailable.</returns>
     public static decimal? CalculateCost(
         int inputTokens,
         int outputTokens,
@@ -71,7 +79,12 @@ public static class PricingTable
     /// </summary>
     /// <param name="modelName">The model name to look up.</param>
     /// <param name="providerRate">Optional provider-configured input rate (USD per million tokens) used as fallback.</param>
-    /// <returns>Input rate per million tokens, or null if no match is found.</returns>
+    /// <summary>
+    /// Resolves the input token rate for a model.
+    /// </summary>
+    /// <param name="modelName">The model name to match.</param>
+    /// <param name="providerRate">The provider-configured input rate to use when no model rate matches.</param>
+    /// <returns>The input rate per million tokens, or <c>null</c> when no rate is available.</returns>
     private static double? FindInputRate(string modelName, double? providerRate)
     {
         // Tier 1: Exact match
@@ -105,7 +118,12 @@ public static class PricingTable
     /// </summary>
     /// <param name="modelName">The model name to look up.</param>
     /// <param name="providerRate">Optional provider-configured output rate (USD per million tokens) used as fallback.</param>
-    /// <returns>Output rate per million tokens, or null if no match is found.</returns>
+    /// <summary>
+    /// Finds the output pricing rate for a model, using configured provider pricing as a fallback.
+    /// </summary>
+    /// <param name="modelName">The model name to look up.</param>
+    /// <param name="providerRate">The provider-configured output rate per million tokens.</param>
+    /// <returns>The output rate per million tokens, or <c>null</c> if no rate is available.</returns>
     private static double? FindOutputRate(string modelName, double? providerRate)
     {
         // Tier 1: Exact match

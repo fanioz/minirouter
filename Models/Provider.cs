@@ -176,7 +176,11 @@ public static class ProviderExtensions
     /// Creates a masked version of the provider with the API key partially redacted for safe exposure via API.
     /// </summary>
     /// <param name="p">The provider to mask.</param>
-    /// <returns>A masked provider with all fields copied except the API key, which is partially redacted.</returns>
+    /// <summary>
+    /// Creates a provider representation with a redacted API key.
+    /// </summary>
+    /// <param name="p">The provider to mask.</param>
+    /// <returns>The provider with its API key reduced to its final four characters or fully redacted when shorter.</returns>
     public static MaskedProvider Mask(this Provider p) => new(
         p.Id,
         p.Name,

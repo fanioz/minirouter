@@ -179,6 +179,9 @@ public class ProviderService : IProviderService, IDisposable
 
     private string GetTempPath() => _configPath + ".tmp";
 
+    /// <summary>
+    /// Persists the provider collection to the configuration file and preserves a backup of the existing configuration.
+    /// </summary>
     private async Task PersistAsync(List<Provider> providers, CancellationToken ct = default)
     {
         var tmpPath = GetTempPath();
@@ -221,6 +224,10 @@ public class ProviderService : IProviderService, IDisposable
     /// Creates a new provider with the specified configuration, including optional provider-configured pricing rates.
     /// </summary>
     /// <param name="dto">Provider creation data transfer object containing all configuration fields.</param>
+    /// <summary>
+    /// Creates and persists a provider from the supplied configuration.
+    /// </summary>
+    /// <param name="dto">The provider configuration.</param>
     /// <returns>The newly created provider.</returns>
     public async Task<Provider> CreateProviderAsync(CreateProviderDto dto)
     {
@@ -264,7 +271,14 @@ public class ProviderService : IProviderService, IDisposable
     /// </summary>
     /// <param name="id">The provider identifier.</param>
     /// <param name="dto">Provider update data transfer object containing fields to update.</param>
+    /// <summary>
+    /// Updates an existing provider and persists the changes.
+    /// </summary>
+    /// <param name="id">The identifier of the provider to update.</param>
+    /// <param name="dto">The updated provider configuration.</param>
     /// <returns>The updated provider.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when no provider with the specified identifier exists.</exception>
+    /// <exception cref="ArgumentException">Thrown when an input or output price is negative.</exception>
     public async Task<Provider> UpdateProviderAsync(string id, UpdateProviderDto dto)
     {
         await _fileLock.WaitAsync();
