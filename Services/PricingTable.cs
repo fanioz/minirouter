@@ -75,7 +75,7 @@ public static class PricingTable
         }
 
         // Tier 3: Provider-configured rate
-        if (providerRate.HasValue)
+        if (providerRate is >= 0)
             return providerRate.Value;
 
         // Tier 4: No match
@@ -103,7 +103,7 @@ public static class PricingTable
         }
 
         // Tier 3: Provider-configured rate
-        if (providerRate.HasValue)
+        if (providerRate is >= 0)
             return providerRate.Value;
 
         // Tier 4: No match

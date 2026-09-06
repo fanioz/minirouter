@@ -233,6 +233,9 @@ public class ProviderService : IProviderService, IDisposable
                 if (_providers.Any(p => p.Id == dto.Id))
                     throw new ArgumentException($"Provider with id '{dto.Id}' already exists");
 
+                if (dto.InputPricePerMillion is < 0 || dto.OutputPricePerMillion is < 0)
+                    throw new ArgumentException("Provider input and output rates must be non-negative");
+
                 created = new Provider(dto.Id, dto.Name, dto.BaseUrl, dto.ApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, dto.PresetId, dto.InputPricePerMillion, dto.OutputPricePerMillion);
                 _providers.Add(created);
                 snapshot = _providers.ToList();
@@ -267,6 +270,10 @@ public class ProviderService : IProviderService, IDisposable
 
                 var existing = _providers[index];
                 var newApiKey = string.IsNullOrWhiteSpace(dto.ApiKey) ? existing.ApiKey : dto.ApiKey;
+
+                if (dto.InputPricePerMillion is < 0 || dto.OutputPricePerMillion is < 0)
+                    throw new ArgumentException("Provider input and output rates must be non-negative");
+
                 updated = new Provider(id, dto.Name, dto.BaseUrl, newApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, existing.PresetId, dto.InputPricePerMillion, dto.OutputPricePerMillion);
                 _providers[index] = updated;
                 snapshot = _providers.ToList();

@@ -136,6 +136,39 @@ namespace MiniRouter.Tests
             Assert.False(File.Exists(_tempConfigFile + ".tmp"));
         }
 
+        [Theory]
+        [InlineData(-1.0, 1.0)]
+        [InlineData(1.0, -1.0)]
+        public async Task CreateProviderAsync_NegativePricing_ThrowsAndDoesNotCreateProvider(double inputRate, double outputRate)
+        {
+            var service = new ProviderService();
+            await service.LoadProvidersAsync();
+
+            await Assert.ThrowsAsync<ArgumentException>(() => service.CreateProviderAsync(
+                new CreateProviderDto("negative", "Negative", "url", "key", InputPricePerMillion: inputRate, OutputPricePerMillion: outputRate)));
+
+            Assert.Empty(await service.ListProvidersAsync());
+        }
+
+        [Theory]
+        [InlineData(-1.0, 1.0)]
+        [InlineData(1.0, -1.0)]
+        public async Task UpdateProviderAsync_NegativePricing_ThrowsAndDoesNotReplaceProvider(double inputRate, double outputRate)
+        {
+            var service = new ProviderService();
+            await service.LoadProvidersAsync();
+            await service.CreateProviderAsync(
+                new CreateProviderDto("provider", "Provider", "url", "key", InputPricePerMillion: 1.0, OutputPricePerMillion: 2.0));
+
+            await Assert.ThrowsAsync<ArgumentException>(() => service.UpdateProviderAsync(
+                "provider", new UpdateProviderDto("Updated", "url", "key", true, InputPricePerMillion: inputRate, OutputPricePerMillion: outputRate)));
+
+            var provider = Assert.Single(await service.ListProvidersAsync());
+            Assert.Equal("Provider", provider.Name);
+            Assert.Equal(1.0, provider.InputPricePerMillion);
+            Assert.Equal(2.0, provider.OutputPricePerMillion);
+        }
+
         [Fact]
         public async Task LoadProvidersAsync_ShouldRemoveOrphanedTempFile()
         {

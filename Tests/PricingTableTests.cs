@@ -114,6 +114,16 @@ public class PricingTableTests
         Assert.Equal(4.00m, cost); // $1.00 input + $3.00 output
     }
 
+    [Theory]
+    [InlineData(-1.00, 3.00)]
+    [InlineData(1.00, -3.00)]
+    public void CustomModel_NegativeProviderRate_ReturnsNull(double inputRate, double outputRate)
+    {
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom", "my-special-model", inputRate, outputRate);
+
+        Assert.Null(cost);
+    }
+
     [Fact]
     public void CustomModel_NoProviderRate_ReturnsNull()
     {
