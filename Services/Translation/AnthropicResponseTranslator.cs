@@ -22,7 +22,7 @@ public static class AnthropicResponseTranslator
                 var text = cv.GetValue<string>();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    content.Add(new JsonObject
+                    content.AddNode(new JsonObject
                     {
                         ["type"] = "text",
                         ["text"] = text
@@ -35,7 +35,7 @@ public static class AnthropicResponseTranslator
                 {
                     if (part?["type"]?.ToString() == "text")
                     {
-                        content.Add(new JsonObject
+                        content.AddNode(new JsonObject
                         {
                             ["type"] = "text",
                             ["text"] = part["text"]?.ToString() ?? ""
@@ -61,7 +61,7 @@ public static class AnthropicResponseTranslator
                         input = args.DeepClone();
                     }
 
-                    content.Add(new JsonObject
+                    content.AddNode(new JsonObject
                     {
                         ["type"] = "tool_use",
                         ["id"] = tc["id"]?.ToString() ?? "",
@@ -96,6 +96,12 @@ public static class AnthropicResponseTranslator
         };
     }
 
+    /// <summary>
+    /// Single source of truth for the OpenAI <c>finish_reason</c> → Anthropic
+    /// <c>stop_reason</c> mapping. Shared by this translator (non-streaming) and
+    /// <see cref="AnthropicStreamTranslator"/> (streaming) so the two paths can
+    /// never diverge. Unrecognized or missing reasons map to "end_turn".
+    /// </summary>
     public static string MapStopReason(string? finishReason) => finishReason switch
     {
         "stop" => "end_turn",

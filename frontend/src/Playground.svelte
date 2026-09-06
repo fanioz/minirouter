@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { SendHorizontal, Loader2, Bot, User, Trash2 } from 'lucide-svelte';
+  import { SendHorizontal, LoaderCircle, Bot, User, Trash2 } from '@lucide/svelte';
   import { toast } from 'svelte-sonner';
 
   /** @typedef {Object} ModelOption
@@ -282,7 +282,7 @@
         aria-label="Send message"
       >
         {#if isGenerating}
-          <Loader2 class="h-5 w-5 animate-spin" />
+          <LoaderCircle class="h-5 w-5 animate-spin" />
         {:else}
           <SendHorizontal class="h-5 w-5" />
         {/if}

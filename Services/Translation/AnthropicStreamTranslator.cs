@@ -17,6 +17,7 @@ public static class AnthropicStreamTranslator
             return results;
 
         var choice = choices[0];
+        if (choice is null) return results;
         var deltaNode = choice["delta"];
 
         // First chunk: emit message_start before any content
@@ -36,8 +37,8 @@ public static class AnthropicStreamTranslator
                     ["role"] = "assistant",
                     ["model"] = state.Model,
                     ["content"] = new JsonArray(),
-                    ["stop_reason"] = (JsonNode)null,
-                    ["stop_sequence"] = (JsonNode)null,
+                    ["stop_reason"] = null,
+                    ["stop_sequence"] = null,
                     ["usage"] = new JsonObject { ["input_tokens"] = 0, ["output_tokens"] = 0 }
                 }
             };
@@ -139,7 +140,8 @@ public static class AnthropicStreamTranslator
         }
 
         // Handle finish reason - close all blocks and emit terminal events
-        if (choice["finish_reason"] is not null)
+        var finishReasonNode = choice["finish_reason"];
+        if (finishReasonNode is not null)
         {
             if (state.TextBlockStarted)
             {
@@ -149,19 +151,16 @@ public static class AnthropicStreamTranslator
 
             foreach (var tc in state.ToolCalls.Values)
             {
-                if (!string.IsNullOrEmpty(tc.ArgBuffer))
-                {
-                    results.Add(new(AnthropicStreamEventType.ContentBlockDelta, new JsonObject
-                    {
-                        ["type"] = "content_block_delta",
-                        ["index"] = tc.BlockIndex,
-                        ["delta"] = new JsonObject { ["type"] = "input_json_delta", ["partial_json"] = tc.ArgBuffer }
-                    }));
-                }
+                // Note: every arguments fragment is already emitted as an
+                // input_json_delta when it arrives; re-sending the accumulated
+                // buffer here would duplicate partial_json on the client and
+                // corrupt the assembled tool input. Just close the block.
                 results.Add(new(AnthropicStreamEventType.ContentBlockStop, new JsonObject { ["type"] = "content_block_stop", ["index"] = tc.BlockIndex }));
             }
 
-            var stopReason = MapFinishReason(choice["finish_reason"].ToString());
+            // Shared mapping (see AnthropicResponseTranslator.MapStopReason) so the
+            // streaming and non-streaming stop_reason translations stay identical.
+            var stopReason = AnthropicResponseTranslator.MapStopReason(finishReasonNode.ToString());
             var finalUsage = new JsonObject { ["input_tokens"] = state.UsagePromptTokens ?? 0, ["output_tokens"] = state.UsageCompletionTokens ?? 0 };
 
             var messageDelta = new JsonObject
@@ -178,14 +177,6 @@ public static class AnthropicStreamTranslator
         return results;
     }
 
-    private static string MapFinishReason(string reason) => reason switch
-    {
-        "stop" => "end_turn",
-        "length" => "max_tokens",
-        "tool_calls" => "tool_use",
-        _ => "end_turn"
-    };
-
     private static bool TryGetArray(JsonObject o, string key, out JsonArray arr)
     {
         if (o[key] is JsonArray jarr)
@@ -201,7 +192,7 @@ public static class AnthropicStreamTranslator
 
     private static T? GetValue<T>(JsonObject o, string key) where T : struct => o[key]?.GetValue<T?>();
 
-    private static string ReplaceChatCmplId(string id) => id?.Replace("chatcmpl-", "msg_") ?? $"msg_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+    private static string ReplaceChatCmplId(string? id) => id?.Replace("chatcmpl-", "msg_") ?? $"msg_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
 
     public static string MapEventType(AnthropicStreamEventType type) => type switch
     {

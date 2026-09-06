@@ -131,18 +131,7 @@ public class ModelChainService : IModelChainService, IDisposable
         if (dto.Name.Contains('/'))
             throw new ArgumentException("Chain name must not contain '/' character");
 
-        // Validate model targets
-        var validationErrors = new List<string>();
-        if (dto.Models != null)
-        {
-            foreach (var model in dto.Models)
-            {
-                if (string.IsNullOrWhiteSpace(model))
-                    validationErrors.Add("Empty model target");
-                else if (!model.Contains('/'))
-                    validationErrors.Add($"Model target '{model}' must contain '/' (providerId/modelName)");
-            }
-        }
+        var validationErrors = ValidateModelTargets(dto.Models);
 
         if (validationErrors.Count > 0)
             throw new ArgumentException($"Invalid chain: {string.Join("; ", validationErrors)}");
@@ -187,52 +176,28 @@ public class ModelChainService : IModelChainService, IDisposable
         await _fileLock.WaitAsync();
         try
         {
-            var index = -1;
-            ModelChain? existing = null;
+            ModelChain updated;
 
+            // Single write-lock window: find, validate, mutate, and produce the return
+            // value together, so a concurrent delete cannot shift indices between lock
+            // acquisitions (Issue #11; mirrors ProviderService.UpdateProviderAsync).
             _rwLock.EnterWriteLock();
             try
             {
-                for (int i = 0; i < _chains.Count; i++)
-                {
-                    if (_chains[i].Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        index = i;
-                        existing = _chains[i];
-                        break;
-                    }
-                }
-
-                if (index == -1)
+                var index = _chains.FindIndex(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                if (index < 0)
                     throw new KeyNotFoundException($"Chain '{name}' not found");
-            }
-            finally
-            {
-                _rwLock.ExitWriteLock();
-            }
 
-            // Validate model targets
-            var validationErrors = new List<string>();
-            if (dto.Models != null)
-            {
-                foreach (var model in dto.Models)
-                {
-                    if (string.IsNullOrWhiteSpace(model))
-                        validationErrors.Add("Empty model target");
-                    else if (!model.Contains('/'))
-                        validationErrors.Add($"Model target '{model}' must contain '/' (providerId/modelName)");
-                }
-            }
+                var existing = _chains[index];
 
-            if (validationErrors.Count > 0)
-                throw new ArgumentException($"Invalid chain: {string.Join("; ", validationErrors)}");
+                var validationErrors = ValidateModelTargets(dto.Models);
 
-            _rwLock.EnterWriteLock();
-            try
-            {
+                if (validationErrors.Count > 0)
+                    throw new ArgumentException($"Invalid chain: {string.Join("; ", validationErrors)}");
+
                 // Preserve original name, update description and models
-                var updated = new ModelChain(
-                    existing!.Name,
+                updated = new ModelChain(
+                    existing.Name,
                     dto.Description?.Trim(),
                     dto.Models?.Select(m => m.Trim()).Where(m => !string.IsNullOrWhiteSpace(m)).ToList() ?? new List<string>()
                 );
@@ -246,8 +211,8 @@ public class ModelChainService : IModelChainService, IDisposable
 
             // Persist outside the write lock (await is not safe inside ReaderWriterLockSlim)
             await PersistAsync();
-            _logger?.LogInformation("[ModelChainService] Updated chain '{Name}'", existing!.Name);
-            return _chains.First(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            _logger?.LogInformation("[ModelChainService] Updated chain '{Name}'", updated.Name);
+            return updated;
         }
         finally
         {
@@ -284,6 +249,23 @@ public class ModelChainService : IModelChainService, IDisposable
         {
             _fileLock.Release();
         }
+    }
+
+    private static List<string> ValidateModelTargets(IEnumerable<string>? models)
+    {
+        var validationErrors = new List<string>();
+        if (models == null)
+            return validationErrors;
+
+        foreach (var model in models)
+        {
+            if (string.IsNullOrWhiteSpace(model))
+                validationErrors.Add("Empty model target");
+            else if (model.Count(c => c == '/') != 1)
+                validationErrors.Add($"Model target '{model}' must contain exactly one '/' (providerId/modelName)");
+        }
+
+        return validationErrors;
     }
 
     private string GetTempPath() => _configPath + ".tmp";
