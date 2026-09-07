@@ -249,21 +249,21 @@ public class ProxyService : IProxyService
         if (!isStream && result.Success && result.ResponseBytes != null)
         {
             var respJson = System.Text.Encoding.UTF8.GetString(result.ResponseBytes);
-            var respNode = JsonNode.Parse(respJson);
-
-            if (respNode != null)
+            try
             {
-                try
+                var respNode = JsonNode.Parse(respJson);
+
+                if (respNode != null)
                 {
                     var anthropicResp = AnthropicResponseTranslator.ToAnthropic(respNode, openaiReq["model"]?.ToString() ?? "");
                     await ctx.Response.BodyWriter.WriteAsync(System.Text.Encoding.UTF8.GetBytes(anthropicResp.ToJsonString()), ct);
                 }
-                catch
+                else
                 {
                     await ctx.Response.BodyWriter.WriteAsync(result.ResponseBytes, ct);
                 }
             }
-            else
+            catch
             {
                 await ctx.Response.BodyWriter.WriteAsync(result.ResponseBytes, ct);
             }
