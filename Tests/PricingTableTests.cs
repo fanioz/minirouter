@@ -102,7 +102,7 @@ public class PricingTableTests
     /// Verifies that static table rates take precedence over provider-configured rates for known models.
     /// </summary>
     [Fact]
-    public void SameModel_DifferentProviders_DifferentCosts()
+    public void SameModel_DifferentProviders_SameStaticCost()
     {
         // Same model (gpt-4o-mini) via two providers with different custom pricing
         var costProviderA = PricingTable.CalculateCost(1_000_000, 1_000_000, "providerA", "gpt-4o-mini");
@@ -132,6 +132,18 @@ public class PricingTableTests
     public void CustomModel_NegativeProviderRate_ReturnsNull(double inputRate, double outputRate)
     {
         var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom", "my-special-model", inputRate, outputRate);
+
+        Assert.Null(cost);
+    }
+
+    [Theory]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NaN)]
+    [InlineData(1.0e30)]
+    public void CustomModel_NonFiniteOrOversizedProviderRate_ReturnsNull(double rate)
+    {
+        // Must return null (never throw OverflowException) for non-finite or oversized rates
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom", "my-special-model", rate, rate);
 
         Assert.Null(cost);
     }

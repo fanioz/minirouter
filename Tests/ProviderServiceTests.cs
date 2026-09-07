@@ -169,6 +169,56 @@ namespace MiniRouter.Tests
             Assert.Equal(2.0, provider.OutputPricePerMillion);
         }
 
+        [Theory]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NaN)]
+        [InlineData(1.0e30)]
+        public async Task CreateProviderAsync_NonFiniteOrOversizedPricing_ThrowsAndDoesNotCreateProvider(double rate)
+        {
+            var service = new ProviderService();
+            await service.LoadProvidersAsync();
+
+            await Assert.ThrowsAsync<ArgumentException>(() => service.CreateProviderAsync(
+                new CreateProviderDto("bad", "Bad", "url", "key", InputPricePerMillion: rate, OutputPricePerMillion: rate)));
+
+            Assert.Empty(await service.ListProvidersAsync());
+        }
+
+        [Fact]
+        public async Task UpdateProviderAsync_NonFinitePricing_ThrowsAndPreservesExistingRates()
+        {
+            var service = new ProviderService();
+            await service.LoadProvidersAsync();
+            await service.CreateProviderAsync(
+                new CreateProviderDto("provider", "Provider", "url", "key", InputPricePerMillion: 1.0, OutputPricePerMillion: 2.0));
+
+            await Assert.ThrowsAsync<ArgumentException>(() => service.UpdateProviderAsync(
+                "provider", new UpdateProviderDto("Updated", "url", "key", true, InputPricePerMillion: double.PositiveInfinity, OutputPricePerMillion: double.PositiveInfinity)));
+
+            var provider = Assert.Single(await service.ListProvidersAsync());
+            Assert.Equal("Provider", provider.Name);
+            Assert.Equal(1.0, provider.InputPricePerMillion);
+            Assert.Equal(2.0, provider.OutputPricePerMillion);
+        }
+
+        [Fact]
+        public async Task UpdateProviderAsync_PricingOmitted_PreservesExistingRates()
+        {
+            var service = new ProviderService();
+            await service.LoadProvidersAsync();
+            await service.CreateProviderAsync(
+                new CreateProviderDto("provider", "Provider", "url", "key", InputPricePerMillion: 1.0, OutputPricePerMillion: 2.0));
+
+            // DTO omits pricing (null) — rates must survive partial updates from UI toggle/edit, presets, CLI
+            await service.UpdateProviderAsync(
+                "provider", new UpdateProviderDto("Updated", "url", "key", true, InputPricePerMillion: null, OutputPricePerMillion: null));
+
+            var provider = Assert.Single(await service.ListProvidersAsync());
+            Assert.Equal("Updated", provider.Name);
+            Assert.Equal(1.0, provider.InputPricePerMillion);
+            Assert.Equal(2.0, provider.OutputPricePerMillion);
+        }
+
         [Fact]
         public async Task LoadProvidersAsync_ShouldRemoveOrphanedTempFile()
         {

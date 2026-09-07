@@ -31,6 +31,14 @@ public static class PricingTable
     };
 
     /// <summary>
+    /// Upper sanity bound for provider-configured rates (USD per million tokens).
+    /// Rates above this bound are rejected at ingest (ProviderService) and ignored at
+    /// calculation time, so a misconfigured value can never overflow the decimal
+    /// cost computation (issue raised in the PR #15 review: 'negative or oversized').
+    /// </summary>
+    public const double MaxProviderPricePerMillionUsd = 1_000_000;
+
+    /// <summary>
     /// Calculates the cost of a completion using a four-tier lookup strategy:
     /// exact model match > pattern match > provider-configured rate > null.
     /// Returns null if no pricing information is available.
@@ -41,14 +49,6 @@ public static class PricingTable
     /// <param name="modelName">Model name to look up in the pricing table.</param>
     /// <param name="providerInputRate">Optional provider-configured input rate (USD per million tokens) used as fallback when no static match exists.</param>
     /// <param name="providerOutputRate">Optional provider-configured output rate (USD per million tokens) used as fallback when no static match exists.</param>
-    /// <summary>
-    /// Calculates the total cost of processing input and output tokens for a model.
-    /// </summary>
-    /// <param name="inputTokens">The number of input tokens.</param>
-    /// <param name="outputTokens">The number of output tokens.</param>
-    /// <param name="modelName">The model name used to determine pricing.</param>
-    /// <param name="providerInputRate">The provider-configured input rate per million tokens.</param>
-    /// <param name="providerOutputRate">The provider-configured output rate per million tokens.</param>
     /// <returns>The total cost in USD, or null when the model name is empty or either rate is unavailable.</returns>
     public static decimal? CalculateCost(
         int inputTokens,
@@ -105,8 +105,9 @@ public static class PricingTable
             }
         }
 
-        // Tier 3: Provider-configured rate
-        if (providerRate is >= 0)
+        // Tier 3: Provider-configured rate (bounded so a stray oversized value can
+        // never overflow the decimal cost computation)
+        if (providerRate is >= 0 and <= MaxProviderPricePerMillionUsd)
             return providerRate.Value;
 
         // Tier 4: No match
@@ -118,11 +119,6 @@ public static class PricingTable
     /// </summary>
     /// <param name="modelName">The model name to look up.</param>
     /// <param name="providerRate">Optional provider-configured output rate (USD per million tokens) used as fallback.</param>
-    /// <summary>
-    /// Finds the output pricing rate for a model, using configured provider pricing as a fallback.
-    /// </summary>
-    /// <param name="modelName">The model name to look up.</param>
-    /// <param name="providerRate">The provider-configured output rate per million tokens.</param>
     /// <returns>The output rate per million tokens, or <c>null</c> if no rate is available.</returns>
     private static double? FindOutputRate(string modelName, double? providerRate)
     {
@@ -144,8 +140,8 @@ public static class PricingTable
             }
         }
 
-        // Tier 3: Provider-configured rate
-        if (providerRate is >= 0)
+        // Tier 3: Provider-configured rate (same bound as the input lookup)
+        if (providerRate is >= 0 and <= MaxProviderPricePerMillionUsd)
             return providerRate.Value;
 
         // Tier 4: No match
