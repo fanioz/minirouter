@@ -179,6 +179,9 @@ public class ProviderService : IProviderService, IDisposable
 
     private string GetTempPath() => _configPath + ".tmp";
 
+    /// <summary>
+    /// Persists the provider collection to the configuration file and preserves a backup of the existing configuration.
+    /// </summary>
     private async Task PersistAsync(List<Provider> providers, CancellationToken ct = default)
     {
         var tmpPath = GetTempPath();
@@ -217,6 +220,13 @@ public class ProviderService : IProviderService, IDisposable
         }
     }
 
+    /// <summary>
+    /// Creates and persists a new provider from the supplied configuration, including
+    /// optional provider-configured pricing rates.
+    /// </summary>
+    /// <param name="dto">Provider creation data transfer object containing all configuration fields.</param>
+    /// <returns>The newly created provider.</returns>
+    /// <exception cref="ArgumentException">Thrown when the id is empty or already exists, or when a rate is not a valid price (finite, non-negative, and no greater than <see cref="PricingTable.MaxProviderPricePerMillionUsd"/>).</exception>
     public async Task<Provider> CreateProviderAsync(CreateProviderDto dto)
     {
         await _fileLock.WaitAsync();
@@ -233,7 +243,11 @@ public class ProviderService : IProviderService, IDisposable
                 if (_providers.Any(p => p.Id == dto.Id))
                     throw new ArgumentException($"Provider with id '{dto.Id}' already exists");
 
-                created = new Provider(dto.Id, dto.Name, dto.BaseUrl, dto.ApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, dto.PresetId);
+                if (dto.InputPricePerMillion is not (null or (>= 0 and <= PricingTable.MaxProviderPricePerMillionUsd))
+                    || dto.OutputPricePerMillion is not (null or (>= 0 and <= PricingTable.MaxProviderPricePerMillionUsd)))
+                    throw new ArgumentException($"Provider input and output rates must be finite, non-negative, and no greater than {PricingTable.MaxProviderPricePerMillionUsd} USD per million tokens");
+
+                created = new Provider(dto.Id, dto.Name, dto.BaseUrl, dto.ApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, dto.PresetId, dto.InputPricePerMillion, dto.OutputPricePerMillion);
                 _providers.Add(created);
                 snapshot = _providers.ToList();
             }
@@ -251,6 +265,15 @@ public class ProviderService : IProviderService, IDisposable
         }
     }
 
+    /// <summary>
+    /// Updates an existing provider and persists the changes. Omitted pricing fields
+    /// preserve the currently configured rates (preserve-on-omit, like ApiKey).
+    /// </summary>
+    /// <param name="id">The provider identifier.</param>
+    /// <param name="dto">Provider update data transfer object containing fields to update.</param>
+    /// <returns>The updated provider.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when no provider with the specified identifier exists.</exception>
+    /// <exception cref="ArgumentException">Thrown when a supplied rate is not a valid price (finite, non-negative, and no greater than <see cref="PricingTable.MaxProviderPricePerMillionUsd"/>).</exception>
     public async Task<Provider> UpdateProviderAsync(string id, UpdateProviderDto dto)
     {
         await _fileLock.WaitAsync();
@@ -267,7 +290,18 @@ public class ProviderService : IProviderService, IDisposable
 
                 var existing = _providers[index];
                 var newApiKey = string.IsNullOrWhiteSpace(dto.ApiKey) ? existing.ApiKey : dto.ApiKey;
-                updated = new Provider(id, dto.Name, dto.BaseUrl, newApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, existing.PresetId);
+
+                // Pricing fields are preserve-on-omit (like ApiKey): a DTO that omits them keeps the
+                // existing rates, so routine partial updates (UI toggle/edit, presets, CLI) cannot
+                // silently reset configured pricing. Explicitly supplied rates must be valid.
+                var newInputPrice = dto.InputPricePerMillion ?? existing.InputPricePerMillion;
+                var newOutputPrice = dto.OutputPricePerMillion ?? existing.OutputPricePerMillion;
+
+                if (newInputPrice is not (null or (>= 0 and <= PricingTable.MaxProviderPricePerMillionUsd))
+                    || newOutputPrice is not (null or (>= 0 and <= PricingTable.MaxProviderPricePerMillionUsd)))
+                    throw new ArgumentException($"Provider input and output rates must be finite, non-negative, and no greater than {PricingTable.MaxProviderPricePerMillionUsd} USD per million tokens");
+
+                updated = new Provider(id, dto.Name, dto.BaseUrl, newApiKey, dto.Enabled, dto.Model, dto.Models, dto.SupportsStreamOptions, dto.ReportsStreamUsage, existing.PresetId, newInputPrice, newOutputPrice);
                 _providers[index] = updated;
                 snapshot = _providers.ToList();
             }

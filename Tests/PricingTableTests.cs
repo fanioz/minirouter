@@ -23,12 +23,16 @@ public class PricingTableTests
         Assert.Equal(0.75m, cost);
     }
 
+    /// <summary>
+    /// Verifies that provider-configured rates are used as a fallback when no static table match exists.
+    /// </summary>
     [Fact]
-    public void ProviderDefault_ApplicationForUnknownModel()
+    public void ProviderRate_UsedWhenNoStaticMatch()
     {
-        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "unknown-provider", "provider_default");
+        // Custom model with provider-configured rate
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom-provider", "my-custom-model", 0.50, 2.00);
         
-        // provider_default: $0.50 input + $2.00 output per million
+        // Provider rate: $0.50 input + $2.00 output per million
         Assert.Equal(2.50m, cost);
     }
 
@@ -64,10 +68,13 @@ public class PricingTableTests
         Assert.True(sum > 0);
     }
 
+    /// <summary>
+    /// Verifies that unknown models without provider-configured rates return null cost.
+    /// </summary>
     [Fact]
-    public void UnknownProvider_ReturnsNull()
+    public void UnknownModel_WithoutProviderRate_ReturnsNull()
     {
-        var cost = PricingTable.CalculateCost(100, 100, "", "unknown");
+        var cost = PricingTable.CalculateCost(100, 100, "unknown-provider", "unknown-model");
         Assert.Null(cost);
     }
 
@@ -89,5 +96,80 @@ public class PricingTableTests
         }
         
         Assert.Single(costs.Where(c => c.HasValue));
+    }
+
+    /// <summary>
+    /// Verifies that static table rates take precedence over provider-configured rates for known models.
+    /// </summary>
+    [Fact]
+    public void SameModel_DifferentProviders_SameStaticCost()
+    {
+        // Same model (gpt-4o-mini) via two providers with different custom pricing
+        var costProviderA = PricingTable.CalculateCost(1_000_000, 1_000_000, "providerA", "gpt-4o-mini");
+        var costProviderB = PricingTable.CalculateCost(1_000_000, 1_000_000, "providerB", "gpt-4o-mini", 0.10, 0.50);
+        
+        // Static table takes precedence — both use static rate
+        Assert.Equal(0.75m, costProviderA); // $0.15 + $0.60
+        Assert.Equal(0.75m, costProviderB); // Static table overrides provider rate
+    }
+
+    /// <summary>
+    /// Verifies that custom models not in the static table use provider-configured rates.
+    /// </summary>
+    [Fact]
+    public void CustomModel_UsesProviderRate()
+    {
+        // Custom model not in static table
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom", "my-special-model", 1.00, 3.00);
+        
+        Assert.NotNull(cost);
+        Assert.Equal(4.00m, cost); // $1.00 input + $3.00 output
+    }
+
+    [Theory]
+    [InlineData(-1.00, 3.00)]
+    [InlineData(1.00, -3.00)]
+    public void CustomModel_NegativeProviderRate_ReturnsNull(double inputRate, double outputRate)
+    {
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom", "my-special-model", inputRate, outputRate);
+
+        Assert.Null(cost);
+    }
+
+    [Theory]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NaN)]
+    [InlineData(1.0e30)]
+    public void CustomModel_NonFiniteOrOversizedProviderRate_ReturnsNull(double rate)
+    {
+        // Must return null (never throw OverflowException) for non-finite or oversized rates
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom", "my-special-model", rate, rate);
+
+        Assert.Null(cost);
+    }
+
+    /// <summary>
+    /// Verifies that custom models without provider-configured rates return null cost.
+    /// </summary>
+    [Fact]
+    public void CustomModel_NoProviderRate_ReturnsNull()
+    {
+        // Custom model with no static match and no provider rate
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "custom", "my-special-model");
+        
+        Assert.Null(cost);
+    }
+
+    /// <summary>
+    /// Verifies that static table rates always take precedence over provider-configured rates when both are available.
+    /// </summary>
+    [Fact]
+    public void StaticTable_TakesPrecedence_OverProviderRate()
+    {
+        // Known model with provider rate supplied — static table wins
+        var cost = PricingTable.CalculateCost(1_000_000, 1_000_000, "openai", "gpt-4o", 0.01, 0.01);
+        
+        // Should use static rate ($5 + $15), not provider rate
+        Assert.Equal(20.00m, cost);
     }
 }

@@ -360,6 +360,10 @@ app.MapPut("/api/providers/{id}", async (string id, UpdateProviderDto dto, IProv
     {
         return Results.NotFound(new ErrorResponse(ex.Message));
     }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new ErrorResponse(ex.Message));
+    }
 })
 .AddEndpointFilter<ApiKeyEndpointFilter>();
 

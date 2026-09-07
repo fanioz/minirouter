@@ -389,6 +389,11 @@ public class ProxyService : IProxyService
         return lastResult ?? new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status502BadGateway, ErrorMessage = "All fallback models exhausted" };
     }
 
+    /// <summary>
+    /// Attempts to execute a request through multiple providers selected in round-robin order.
+    /// </summary>
+    /// <param name="requestedModel">The model to use when selecting eligible providers.</param>
+    /// <returns>The first successful or unrecoverable result, or the last failure after provider attempts are exhausted.</returns>
     private async Task<ProxyExecutionResult> HandleRoundRobinExecutionAsync(string? requestedModel, ProxyExecutionRequest request, CancellationToken ct)
     {
         int maxRetries = 2;
@@ -435,6 +440,15 @@ public class ProxyService : IProxyService
         return lastResult ?? new ProxyExecutionResult { Success = false, StatusCode = StatusCodes.Status502BadGateway, ErrorMessage = "All retries exhausted" };
     }
 
+    /// <summary>
+    /// Executes a completion request against a single provider, handling both streaming and non-streaming responses,
+    /// token usage tracking, cost calculation (including provider-configured rates), and circuit breaker state.
+    /// </summary>
+    /// <param name="provider">The provider to send the request to.</param>
+    /// <param name="targetModelName">The model name to use for this request.</param>
+    /// <param name="request">The proxy execution request containing the client's original request details.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The execution result containing the upstream response, status, usage data, and cost information.</returns>
     private async Task<ProxyExecutionResult> ExecuteSingleProviderAsync(Provider provider, string? targetModelName, ProxyExecutionRequest request, CancellationToken ct)
     {
         JsonNode? reqNode = null;
@@ -678,7 +692,13 @@ public class ProxyService : IProxyService
                     
                     if (tokensIn.HasValue && tokensOut.HasValue && !string.IsNullOrEmpty(actualModel))
                     {
-                        cost = PricingTable.CalculateCost(tokensIn.Value, tokensOut.Value, provider.Id, actualModel);
+                        cost = PricingTable.CalculateCost(
+                            tokensIn.Value, 
+                            tokensOut.Value, 
+                            provider.Id, 
+                            actualModel,
+                            provider.InputPricePerMillion,
+                            provider.OutputPricePerMillion);
                         costEstimated = estimated;
                     }
                     
@@ -715,7 +735,13 @@ public class ProxyService : IProxyService
         
         if (tokensIn.HasValue && tokensOut.HasValue && !string.IsNullOrEmpty(actualModel))
         {
-            cost = PricingTable.CalculateCost(tokensIn.Value, tokensOut.Value, provider.Id, actualModel);
+            cost = PricingTable.CalculateCost(
+                tokensIn.Value, 
+                tokensOut.Value, 
+                provider.Id, 
+                actualModel,
+                provider.InputPricePerMillion,
+                provider.OutputPricePerMillion);
             costEstimated = estimated;
         }
         
