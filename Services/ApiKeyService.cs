@@ -49,7 +49,7 @@ public class ApiKeyService : IApiKeyService
         var plaintextKey = "sk-" + Convert.ToHexString(keyBytes).ToLowerInvariant();
         
         var keyHash = HashKey(plaintextKey);
-        var keyPrefix = plaintextKey.Substring(0, 7); // e.g. "sk-abcd"
+        var keyPrefix = plaintextKey.Substring(0, 8); // e.g. "sk-abcde"
 
         var apiKey = new CreateApiKeyResponse
         {

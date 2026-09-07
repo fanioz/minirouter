@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using MiniRouter.Models;
@@ -136,29 +137,42 @@ if (isCliMode)
 
 if (args.Length > 0)
 {
-    if (args[0] == "restart" || args[0] == "providers")
+    if (args[0] == "restart" || args[0] == "providers" || args[0] == "keys")
     {
         var registrations = new ServiceCollection();
         registrations.AddSingleton<IProviderService, ProviderService>();
         registrations.AddSingleton<ITerminalFeedback, TerminalFeedback>();
         registrations.AddSingleton<IProcessLocator, ProcessLocator>();
         registrations.AddSingleton<IServerProcessManager, ServerProcessManager>();
-        
+        registrations.AddSingleton<IConfiguration>(_ => new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build());
+        registrations.AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions()));
+        registrations.AddSingleton<IApiKeyService, ApiKeyService>();
+
         var registrar = new TypeRegistrar(registrations);
         var appCli = new CommandApp(registrar);
-        
-        appCli.Configure(config => 
+
+        appCli.Configure(config =>
         {
             config.AddCommand<RestartCommand>("restart");
-            config.AddBranch("providers", p => 
+            config.AddBranch("providers", p =>
             {
                 p.AddCommand<ProvidersListCommand>("list");
                 p.AddCommand<ProvidersAddCommand>("add");
                 p.AddCommand<ProvidersEditCommand>("edit");
                 p.AddCommand<ProvidersDeleteCommand>("delete");
             });
+            config.AddBranch("keys", p =>
+            {
+                p.AddCommand<KeysCreateCommand>("create");
+                p.AddCommand<KeysListCommand>("list");
+            });
         });
-        
+
         return await appCli.RunAsync(args);
     }
 
