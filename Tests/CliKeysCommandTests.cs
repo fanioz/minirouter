@@ -100,6 +100,7 @@ public class CliKeysCommandTests : IDisposable
         await _service.InitializeAsync();
         var used = await _service.CreateApiKeyAsync(new CreateApiKeyDto { Name = "ci-runner" });
         var unused = await _service.CreateApiKeyAsync(new CreateApiKeyDto { Name = "spare" });
+        var markup = await _service.CreateApiKeyAsync(new CreateApiKeyDto { Name = "[dim]sneaky" });
         await _service.ValidateAndRecordUsageAsync(used.PlaintextKey); // stamps LastUsedAt
         await _service.UpdateApiKeyAsync(unused.Id, new UpdateApiKeyDto { Name = "spare", Enabled = false });
 
@@ -133,6 +134,8 @@ public class CliKeysCommandTests : IDisposable
         Assert.Contains(unused.KeyPrefix, output);
         Assert.Contains("ci-runner", output);
         Assert.Contains("spare", output);
+        // Spectre markup in a key name must render literally, not be interpreted as styling
+        Assert.Contains("[dim]sneaky", output);
         var lines = output.Split('\n').Select(l => l.Trim()).ToList();
         Assert.Contains(lines, l => l.Contains("ci-runner") && l.Contains("Yes"));
         Assert.Contains(lines, l => l.Contains("spare") && l.Contains("No"));

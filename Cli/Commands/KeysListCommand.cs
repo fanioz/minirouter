@@ -34,7 +34,7 @@ public class KeysListCommand : AsyncCommand<KeysListCommand.Settings>
         {
             table.AddRow(
                 key.KeyPrefix,
-                key.Name,
+                Markup.Escape(key.Name),
                 key.Enabled ? "[green]Yes[/]" : "[red]No[/]",
                 key.LastUsedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "Never"
             );
