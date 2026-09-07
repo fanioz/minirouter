@@ -15,6 +15,11 @@ namespace MiniRouter.Services;
 /// Stores model chains in a JSON file (read-modify-write on every CRUD op).
 /// Thread-safe via ReaderWriterLockSlim for reads and SemaphoreSlim for file I/O.
 /// Mirrors the ProviderService pattern.
+///
+/// Mutation contract: mutators mutate _chains under the write lock, then persist
+/// while still holding _fileLock (all mutators serialize on it); a failed persist
+/// rolls the in-memory mutation back so memory never outruns disk. If the process
+/// dies between mutate and persist, the disk copy wins on the next load.
 /// </summary>
 public class ModelChainService : IModelChainService, IDisposable
 {
@@ -131,7 +136,7 @@ public class ModelChainService : IModelChainService, IDisposable
         if (dto.Name.Contains('/'))
             throw new ArgumentException("Chain name must not contain '/' character");
 
-        var validationErrors = ValidateModelTargets(dto.Models);
+        var validationErrors = ModelChain.ValidateTargets(dto.Models).ToList();
 
         if (validationErrors.Count > 0)
             throw new ArgumentException($"Invalid chain: {string.Join("; ", validationErrors)}");
@@ -161,7 +166,12 @@ public class ModelChainService : IModelChainService, IDisposable
             }
 
             // Persist outside the write lock (await is not safe inside ReaderWriterLockSlim)
-            await PersistAsync();
+            await PersistOrRollbackAsync(() =>
+            {
+                _rwLock.EnterWriteLock();
+                try { _chains.RemoveAll(c => ReferenceEquals(c, chain)); }
+                finally { _rwLock.ExitWriteLock(); }
+            });
             _logger?.LogInformation("[ModelChainService] Created chain '{Name}' with {Count} targets", chain.Name, chain.Models.Count);
             return chain;
         }
@@ -177,6 +187,8 @@ public class ModelChainService : IModelChainService, IDisposable
         try
         {
             ModelChain updated;
+            int index;
+            ModelChain existing;
 
             // Single write-lock window: find, validate, mutate, and produce the return
             // value together, so a concurrent delete cannot shift indices between lock
@@ -184,13 +196,13 @@ public class ModelChainService : IModelChainService, IDisposable
             _rwLock.EnterWriteLock();
             try
             {
-                var index = _chains.FindIndex(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                index = _chains.FindIndex(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if (index < 0)
                     throw new KeyNotFoundException($"Chain '{name}' not found");
 
-                var existing = _chains[index];
+                existing = _chains[index];
 
-                var validationErrors = ValidateModelTargets(dto.Models);
+                var validationErrors = ModelChain.ValidateTargets(dto.Models).ToList();
 
                 if (validationErrors.Count > 0)
                     throw new ArgumentException($"Invalid chain: {string.Join("; ", validationErrors)}");
@@ -210,7 +222,12 @@ public class ModelChainService : IModelChainService, IDisposable
             }
 
             // Persist outside the write lock (await is not safe inside ReaderWriterLockSlim)
-            await PersistAsync();
+            await PersistOrRollbackAsync(() =>
+            {
+                _rwLock.EnterWriteLock();
+                try { _chains[index] = existing; }
+                finally { _rwLock.ExitWriteLock(); }
+            });
             _logger?.LogInformation("[ModelChainService] Updated chain '{Name}'", updated.Name);
             return updated;
         }
@@ -225,11 +242,12 @@ public class ModelChainService : IModelChainService, IDisposable
         await _fileLock.WaitAsync();
         try
         {
-            int removedCount;
+            List<ModelChain> removedChains;
             _rwLock.EnterWriteLock();
             try
             {
-                removedCount = _chains.RemoveAll(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                removedChains = _chains.Where(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).ToList();
+                _chains.RemoveAll(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
             finally
             {
@@ -237,13 +255,18 @@ public class ModelChainService : IModelChainService, IDisposable
             }
 
             // Persist outside the write lock (await is not safe inside ReaderWriterLockSlim)
-            if (removedCount > 0)
+            if (removedChains.Count > 0)
             {
-                await PersistAsync();
+                await PersistOrRollbackAsync(() =>
+                {
+                    _rwLock.EnterWriteLock();
+                    try { _chains.AddRange(removedChains); }
+                    finally { _rwLock.ExitWriteLock(); }
+                });
                 _logger?.LogInformation("[ModelChainService] Deleted chain '{Name}'", name);
             }
 
-            return removedCount > 0;
+            return removedChains.Count > 0;
         }
         finally
         {
@@ -251,32 +274,52 @@ public class ModelChainService : IModelChainService, IDisposable
         }
     }
 
-    private static List<string> ValidateModelTargets(IEnumerable<string>? models)
-    {
-        var validationErrors = new List<string>();
-        if (models == null)
-            return validationErrors;
-
-        foreach (var model in models)
-        {
-            if (string.IsNullOrWhiteSpace(model))
-                validationErrors.Add("Empty model target");
-            else if (model.Count(c => c == '/') != 1)
-                validationErrors.Add($"Model target '{model}' must contain exactly one '/' (providerId/modelName)");
-        }
-
-        return validationErrors;
-    }
-
     private string GetTempPath() => _configPath + ".tmp";
+
+    /// <summary>
+    /// Persists the current chain list, rolling back the caller's in-memory
+    /// mutation when the write fails so memory never outruns disk (a later
+    /// successful persist would otherwise silently write the failed change).
+    /// The rollback restores the pre-mutation state; the caller must still
+    /// hold _fileLock (indices/order are stable under it). Residual tradeoff:
+    /// if the process dies between mutate and persist, the disk copy is
+    /// authoritative on the next load.
+    /// </summary>
+    private async Task PersistOrRollbackAsync(Action rollback)
+    {
+        try
+        {
+            await PersistAsync();
+        }
+        catch
+        {
+            rollback();
+            throw;
+        }
+    }
 
     private async Task PersistAsync(CancellationToken ct = default)
     {
         var tmpPath = GetTempPath();
 
+        // Snapshot under the read lock — never hold ReaderWriterLockSlim across
+        // an await: continuations may resume on another thread, and ExitReadLock
+        // is thread-affine (a failed exit deadlocks the rollback's write lock).
+        // Legal here (no lock recursion): every caller releases the write lock
+        // before calling PersistAsync, holding only _fileLock.
+        string json;
+        _rwLock.EnterReadLock();
+        try
+        {
+            json = JsonSerializer.Serialize(_chains, AppJsonContext.Default.ModelChainList);
+        }
+        finally
+        {
+            _rwLock.ExitReadLock();
+        }
+
         await using var fs = new FileStream(tmpPath, FileMode.Create, FileAccess.Write, FileShare.None);
         await using var writer = new StreamWriter(fs);
-        var json = JsonSerializer.Serialize(_chains, AppJsonContext.Default.ModelChainList);
         await writer.WriteAsync(json.AsMemory(), ct);
         await writer.FlushAsync(ct);
         fs.Flush(true);

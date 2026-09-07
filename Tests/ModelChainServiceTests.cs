@@ -233,5 +233,92 @@ namespace MiniRouter.Tests
             Assert.True(service.IsChain("Tier1"));
             Assert.False(service.IsChain("tier2"));
         }
+
+        // ── Issue #18 items 3 & 5: shared validation + persist-failure rollback ──
+
+        private string TmpWritePath => _tempConfigFile + ".tmp";
+
+        [Fact]
+        public void ModelChain_ValidateTargets_ShapesErrors()
+        {
+            var errors = ModelChain.ValidateTargets(
+                new List<string> { "p1/m1", "no-slash", "a/b/c", " " }).ToList();
+
+            Assert.Equal(3, errors.Count);
+            Assert.Contains("must contain exactly one '/'", errors[0]);
+            Assert.Contains("must contain exactly one '/'", errors[1]);
+            Assert.Equal("Empty model target", errors[2]);
+        }
+
+        // A directory at the temp-write path makes PersistAsync fail after the
+        // in-memory mutation — the rollback path under test.
+        private void BlockPersist() => Directory.CreateDirectory(TmpWritePath);
+        private void UnblockPersist() => Directory.Delete(TmpWritePath, recursive: true);
+
+        [Fact]
+        public async Task CreateChain_WhenPersistFails_RollsBackInMemory()
+        {
+            var service = CreateService();
+            await service.LoadChainsAsync();
+
+            BlockPersist();
+            try
+            {
+                await Assert.ThrowsAnyAsync<Exception>(() => service.CreateChainAsync(new CreateModelChainDto(
+                    "tier1", null, new List<string> { "p1/m1" })));
+
+                Assert.Null(service.GetChain("tier1"));
+                Assert.Empty(service.ListChains());
+            }
+            finally
+            {
+                UnblockPersist();
+            }
+        }
+
+        [Fact]
+        public async Task UpdateChain_WhenPersistFails_RestoresOriginal()
+        {
+            var service = CreateService();
+            await service.LoadChainsAsync();
+            await service.CreateChainAsync(new CreateModelChainDto(
+                "tier1", null, new List<string> { "p1/m1" }));
+
+            BlockPersist();
+            try
+            {
+                await Assert.ThrowsAnyAsync<Exception>(() => service.UpdateChainAsync("tier1",
+                    new UpdateModelChainDto(null, new List<string> { "p2/m2" })));
+
+                var chain = service.GetChain("tier1");
+                Assert.NotNull(chain);
+                Assert.Equal(new List<string> { "p1/m1" }, chain.Models);
+            }
+            finally
+            {
+                UnblockPersist();
+            }
+        }
+
+        [Fact]
+        public async Task DeleteChain_WhenPersistFails_RestoresChain()
+        {
+            var service = CreateService();
+            await service.LoadChainsAsync();
+            await service.CreateChainAsync(new CreateModelChainDto(
+                "tier1", null, new List<string> { "p1/m1" }));
+
+            BlockPersist();
+            try
+            {
+                await Assert.ThrowsAnyAsync<Exception>(() => service.DeleteChainAsync("tier1"));
+
+                Assert.NotNull(service.GetChain("tier1"));
+            }
+            finally
+            {
+                UnblockPersist();
+            }
+        }
     }
 }

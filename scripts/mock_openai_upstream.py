@@ -44,10 +44,39 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", 0))
         return self.rfile.read(length) if length else b""
 
+    def _validate_request(self, body):
+        """Assert the router translated the Anthropic request into Chat
+        Completions shape (issue #18): with this, the smoke covers the
+        request side of the translation, not just the response side.
+        Returns an error string, or None when the request looks right."""
+        try:
+            req = json.loads(body or b"{}")
+        except ValueError:
+            return "request body is not valid JSON"
+        if req.get("model") != "mock-model":
+            return f"expected model 'mock-model', got {req.get('model')!r}"
+        messages = req.get("messages")
+        if not isinstance(messages, list) or not messages:
+            return f"expected a non-empty 'messages' array, got {messages!r}"
+        for m in messages:
+            if not isinstance(m, dict) or m.get("role") not in ("system", "user", "assistant") or "content" not in m:
+                return f"message missing role/content or unknown role: {m!r}"
+        return None
+
     def do_POST(self):
-        self._read_body()  # drain request body before replying
+        body = self._read_body()  # drain request body before replying
         if self.path != "/v1/chat/completions":
             self.send_error(404)
+            return
+        error = self._validate_request(body)
+        if error:
+            print(f"mock_openai_upstream: rejecting request: {error}", file=sys.stderr)
+            resp = json.dumps({"error": {"message": f"request-side validation failed: {error}"}}).encode()
+            self.send_response(400)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(resp)))
+            self.end_headers()
+            self.wfile.write(resp)
             return
         resp = json.dumps(MOCK_RESPONSE).encode()
         self.send_response(200)

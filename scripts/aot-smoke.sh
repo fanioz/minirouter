@@ -14,9 +14,17 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BINARY="$ROOT/bin/Release/net10.0/osx-arm64/publish/MininRouter"
+PUBLISH_ROOT="$ROOT/bin/Release/net10.0"
 ROUTER_PORT=18080
 MOCK_PORT=18099
+
+# Native AOT publish output lives under the RID directory (e.g. osx-arm64,
+# linux-x64). Resolve it by glob instead of hardcoding one RID so the smoke
+# works on any host; with several RIDs present, take the most recent build.
+find_binary() {
+    ls -t "$PUBLISH_ROOT"/*/publish/MininRouter 2>/dev/null | head -1 || true
+}
+BINARY="$(find_binary)"
 
 MOCK_PID=""
 ROUTER_PID=""
@@ -54,7 +62,7 @@ done
 
 # Publish unless the AOT binary already exists and is newer than the sources.
 needs_publish=1
-if [ -x "$BINARY" ]; then
+if [ -n "$BINARY" ] && [ -x "$BINARY" ]; then
     newer_sources="$(find "$ROOT" \( -path "$ROOT/bin" -o -path "$ROOT/obj" -o -path "$ROOT/frontend" \) -prune \
         -o \( -name '*.cs' -o -name '*.csproj' \) -newer "$BINARY" -print -quit)"
     [ -z "$newer_sources" ] && needs_publish=0
@@ -62,10 +70,11 @@ fi
 if [ "$needs_publish" -eq 1 ]; then
     echo "aot-smoke: publishing Release AOT build..."
     dotnet publish -c Release "$ROOT/MininRouter.csproj" || fail "dotnet publish failed"
+    BINARY="$(find_binary)"
 else
     echo "aot-smoke: reusing existing AOT binary at $BINARY"
 fi
-[ -x "$BINARY" ] || fail "publish output binary not found at $BINARY"
+[ -n "$BINARY" ] && [ -x "$BINARY" ] || fail "publish output binary not found under $PUBLISH_ROOT/*/publish/"
 
 # Mock OpenAI upstream.
 python3 "$ROOT/scripts/mock_openai_upstream.py" "$MOCK_PORT" &

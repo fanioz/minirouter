@@ -14,23 +14,28 @@ public record ModelChain(
 )
 {
     /// <summary>
-    /// Validates that each model entry contains exactly one '/' separator.
+    /// Single source of truth for chain-target validation: each model entry
+    /// must contain exactly one '/' separator (providerId/modelName). The
+    /// service and any ModelChain instance both delegate here.
     /// </summary>
-    public IEnumerable<string> ValidateTargets()
+    public static IEnumerable<string> ValidateTargets(IEnumerable<string>? models)
     {
-        if (Models == null)
+        if (models == null)
             yield break;
 
-        foreach (var model in Models)
+        foreach (var model in models)
         {
             if (string.IsNullOrWhiteSpace(model))
-                yield return $"Empty model target";
-            else if (!model.Contains('/'))
-                yield return $"Model target '{model}' must contain '/' (providerId/modelName)";
-            else if (model.Split('/').Length != 2)
-                yield return $"Model target '{model}' must contain exactly one '/' separator";
+                yield return "Empty model target";
+            else if (model.Count(c => c == '/') != 1)
+                yield return $"Model target '{model}' must contain exactly one '/' (providerId/modelName)";
         }
     }
+
+    /// <summary>
+    /// Validates that each model entry contains exactly one '/' separator.
+    /// </summary>
+    public IEnumerable<string> ValidateTargets() => ValidateTargets(Models);
 }
 
 /// <summary>
