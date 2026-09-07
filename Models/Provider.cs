@@ -268,6 +268,10 @@ public class AnthropicStreamState
     public int? UsagePromptTokens { get; set; }
     public int? UsageCompletionTokens { get; set; }
     public string? FinishReason { get; set; }
+    // Set when a finish_reason chunk was seen but the terminal message_delta/
+    // message_stop events are deferred until Finalize() (stream end), so
+    // message_delta can carry usage from the terminal usage-only chunk.
+    public bool TerminalPending { get; set; }
 }
 
 public record ToolCallInfo(string Id, string Name, int BlockIndex, string ArgBuffer);

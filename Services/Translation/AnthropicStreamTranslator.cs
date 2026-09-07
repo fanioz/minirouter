@@ -13,7 +13,18 @@ public static class AnthropicStreamTranslator
     {
         var results = new List<AnthropicStreamEvent>();
 
-        if (chunk is not JsonObject obj || !TryGetArray(obj, "choices", out var choices) || choices.Count == 0)
+        if (chunk is not JsonObject obj)
+            return results;
+
+        // Track usage before the choices guard: OpenAI's terminal usage-only chunk
+        // (choices: []) must not be discarded before the token counts are recorded.
+        if (obj["usage"] is JsonObject usageObj)
+        {
+            state.UsagePromptTokens = GetValue<int>(usageObj, "prompt_tokens");
+            state.UsageCompletionTokens = GetValue<int>(usageObj, "completion_tokens");
+        }
+
+        if (!TryGetArray(obj, "choices", out var choices) || choices.Count == 0)
             return results;
 
         var choice = choices[0];
@@ -132,14 +143,11 @@ public static class AnthropicStreamTranslator
             }
         }
 
-        // Track usage
-        if (obj["usage"] is JsonObject usageObj)
-        {
-            state.UsagePromptTokens = GetValue<int>(usageObj, "prompt_tokens");
-            state.UsageCompletionTokens = GetValue<int>(usageObj, "completion_tokens");
-        }
-
-        // Handle finish reason - close all blocks and emit terminal events
+        // Handle finish reason - close all blocks now, but defer the terminal
+        // message_delta/message_stop to Finalize(): OpenAI sends usage in a
+        // separate choices: [] chunk that arrives *after* the finish_reason
+        // chunk, so message_delta must wait until the stream ends to carry
+        // real token counts.
         var finishReasonNode = choice["finish_reason"];
         if (finishReasonNode is not null)
         {
@@ -158,21 +166,41 @@ public static class AnthropicStreamTranslator
                 results.Add(new(AnthropicStreamEventType.ContentBlockStop, new JsonObject { ["type"] = "content_block_stop", ["index"] = tc.BlockIndex }));
             }
 
-            // Shared mapping (see AnthropicResponseTranslator.MapStopReason) so the
-            // streaming and non-streaming stop_reason translations stay identical.
-            var stopReason = AnthropicResponseTranslator.MapStopReason(finishReasonNode.ToString());
-            var finalUsage = new JsonObject { ["input_tokens"] = state.UsagePromptTokens ?? 0, ["output_tokens"] = state.UsageCompletionTokens ?? 0 };
-
-            var messageDelta = new JsonObject
-            {
-                ["type"] = "message_delta",
-                ["delta"] = new JsonObject { ["stop_reason"] = stopReason },
-                ["usage"] = finalUsage
-            };
-            results.Add(new(AnthropicStreamEventType.MessageDelta, messageDelta));
-
-            results.Add(new(AnthropicStreamEventType.MessageStop, new JsonObject { ["type"] = "message_stop" }));
+            state.FinishReason = finishReasonNode.ToString();
+            state.TerminalPending = true;
         }
+
+        return results;
+    }
+
+    /// <summary>
+    /// Emit the deferred terminal events (message_delta, message_stop) once the
+    /// upstream stream is complete, so message_delta carries the final usage
+    /// recorded from the terminal usage-only chunk. Idempotent: only the first
+    /// call after a finish_reason emits events.
+    /// </summary>
+    public static List<AnthropicStreamEvent> Finalize(ref AnthropicStreamState state)
+    {
+        var results = new List<AnthropicStreamEvent>();
+        if (!state.TerminalPending)
+            return results;
+
+        state.TerminalPending = false;
+
+        // Shared mapping (see AnthropicResponseTranslator.MapStopReason) so the
+        // streaming and non-streaming stop_reason translations stay identical.
+        var stopReason = AnthropicResponseTranslator.MapStopReason(state.FinishReason);
+        var finalUsage = new JsonObject { ["input_tokens"] = state.UsagePromptTokens ?? 0, ["output_tokens"] = state.UsageCompletionTokens ?? 0 };
+
+        var messageDelta = new JsonObject
+        {
+            ["type"] = "message_delta",
+            ["delta"] = new JsonObject { ["stop_reason"] = stopReason },
+            ["usage"] = finalUsage
+        };
+        results.Add(new(AnthropicStreamEventType.MessageDelta, messageDelta));
+
+        results.Add(new(AnthropicStreamEventType.MessageStop, new JsonObject { ["type"] = "message_stop" }));
 
         return results;
     }

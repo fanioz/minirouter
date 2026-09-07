@@ -229,6 +229,7 @@ public class TranslationRoundTripTests
         {
             events.AddRange(AnthropicStreamTranslator.Translate(Parse(chunkJson), ref state));
         }
+        events.AddRange(AnthropicStreamTranslator.Finalize(ref state));
 
         var types = events.Select(e => e.Type).ToArray();
         Assert.Equal(
@@ -278,6 +279,7 @@ public class TranslationRoundTripTests
         {
             events.AddRange(AnthropicStreamTranslator.Translate(Parse(chunkJson), ref state));
         }
+        events.AddRange(AnthropicStreamTranslator.Finalize(ref state));
 
         var types = events.Select(e => e.Type).ToArray();
         Assert.Equal(
@@ -316,6 +318,61 @@ public class TranslationRoundTripTests
         var state = new AnthropicStreamState();
         var events = AnthropicStreamTranslator.Translate(Parse("""{ "choices": [] }"""), ref state);
         Assert.Empty(events);
+    }
+
+    [Fact]
+    public void Stream_SplitUsageChunk_FinalizeCarriesUsage()
+    {
+        // OpenAI wire order with stream_options.include_usage: finish_reason
+        // arrives first, then a terminal usage-only chunk with choices: [].
+        // message_delta must be deferred to Finalize to see real token counts.
+        var state = new AnthropicStreamState();
+        var events = new List<AnthropicStreamEvent>();
+
+        foreach (var chunkJson in new[]
+        {
+            """{ "id": "chatcmpl-u1", "model": "gpt-test", "choices": [ { "delta": { "content": "hi" } } ] }""",
+            """{ "choices": [ { "delta": {}, "finish_reason": "stop", "usage": null } ] }""",
+            """{ "choices": [], "usage": { "prompt_tokens": 7, "completion_tokens": 9 } }"""
+        })
+        {
+            events.AddRange(AnthropicStreamTranslator.Translate(Parse(chunkJson), ref state));
+        }
+
+        // No terminal events before Finalize — they are deferred.
+        Assert.DoesNotContain(events, e => e.Type == AnthropicStreamEventType.MessageDelta);
+        Assert.DoesNotContain(events, e => e.Type == AnthropicStreamEventType.MessageStop);
+
+        events.AddRange(AnthropicStreamTranslator.Finalize(ref state));
+
+        var delta = events.First(e => e.Type == AnthropicStreamEventType.MessageDelta).Data;
+        Assert.Equal("end_turn", delta["delta"]!["stop_reason"]!.ToString());
+        Assert.Equal(7, delta["usage"]!["input_tokens"]!.GetValue<int>());
+        Assert.Equal(9, delta["usage"]!["output_tokens"]!.GetValue<int>());
+
+        Assert.Equal("message_stop", events.Last().Data["type"]!.ToString());
+
+        // Finalize is idempotent: a second flush (synthetic [DONE]) emits nothing.
+        Assert.Empty(AnthropicStreamTranslator.Finalize(ref state));
+    }
+
+    [Fact]
+    public void Stream_UsageOnlyChunk_RecordsUsageWithoutEvents()
+    {
+        var state = new AnthropicStreamState();
+        var events = AnthropicStreamTranslator.Translate(
+            Parse("""{ "choices": [], "usage": { "prompt_tokens": 11, "completion_tokens": 13 } }"""), ref state);
+
+        Assert.Empty(events);
+        Assert.Equal(11, state.UsagePromptTokens);
+        Assert.Equal(13, state.UsageCompletionTokens);
+    }
+
+    [Fact]
+    public void Finalize_WithoutFinishReason_EmitsNothing()
+    {
+        var state = new AnthropicStreamState();
+        Assert.Empty(AnthropicStreamTranslator.Finalize(ref state));
     }
 
     // ── Full round-trip ──────────────────────────────────────────────────────

@@ -181,6 +181,16 @@ public class ProxyService : IProxyService
                     ctx.Response.Headers.Append("Connection", "keep-alive");
                 }
 
+                async Task WriteAnthropicEventsAsync(List<AnthropicStreamEvent> events)
+                {
+                    foreach (var evt in events)
+                    {
+                        var eventLine = $"event: {AnthropicStreamTranslator.MapEventType(evt.Type)}\ndata: {evt.Data.ToJsonString()}\n\n";
+                        await ctx.Response.BodyWriter.WriteAsync(Encoding.UTF8.GetBytes(eventLine), token);
+                    }
+                    await ctx.Response.Body.FlushAsync(token);
+                }
+
                 try
                 {
                     var chunkStr = Encoding.UTF8.GetString(chunk);
@@ -189,21 +199,18 @@ public class ProxyService : IProxyService
                     var jsonStr = chunkStr.StartsWith("data: ") ? chunkStr.Substring(6) : chunkStr;
                     
                     if (jsonStr == "[DONE]" || string.IsNullOrWhiteSpace(jsonStr))
+                    {
+                        // Stream end: flush the deferred terminal events so
+                        // message_delta carries the final usage.
+                        if (jsonStr == "[DONE]")
+                            await WriteAnthropicEventsAsync(AnthropicStreamTranslator.Finalize(ref anthropicState));
                         return;
+                    }
                     
                     var chunkNode = JsonNode.Parse(jsonStr);
                     if (chunkNode != null)
                     {
-                        var events = AnthropicStreamTranslator.Translate(chunkNode, ref anthropicState);
-                        
-                        foreach (var evt in events)
-                        {
-                            var eventData = evt.Data.ToJsonString();
-                            var eventLine = $"event: {AnthropicStreamTranslator.MapEventType(evt.Type)}\ndata: {eventData}\n\n";
-                            var eventBytes = Encoding.UTF8.GetBytes(eventLine);
-                            await ctx.Response.BodyWriter.WriteAsync(eventBytes, token);
-                        }
-                        await ctx.Response.Body.FlushAsync(token);
+                        await WriteAnthropicEventsAsync(AnthropicStreamTranslator.Translate(chunkNode, ref anthropicState));
                         return;
                     }
                 }
@@ -256,20 +263,25 @@ public class ProxyService : IProxyService
                 if (respNode != null)
                 {
                     var anthropicResp = AnthropicResponseTranslator.ToAnthropic(respNode, openaiReq["model"]?.ToString() ?? "");
+                    ctx.Response.ContentType = "application/json";
                     await ctx.Response.BodyWriter.WriteAsync(System.Text.Encoding.UTF8.GetBytes(anthropicResp.ToJsonString()), ct);
                 }
                 else
                 {
+                    ctx.Response.ContentType = result.ContentType ?? "application/json";
                     await ctx.Response.BodyWriter.WriteAsync(result.ResponseBytes, ct);
                 }
             }
             catch
             {
+                ctx.Response.ContentType = result.ContentType ?? "application/json";
                 await ctx.Response.BodyWriter.WriteAsync(result.ResponseBytes, ct);
             }
         }
         else if (!result.Success && !string.IsNullOrEmpty(result.ErrorMessage))
         {
+            if (!ctx.Response.HasStarted)
+                ctx.Response.ContentType = "application/json";
             await ctx.Response.WriteAsync(TranslateErrorToAnthropic(result.ErrorMessage), ct);
         }
     }
@@ -644,6 +656,16 @@ public class ProxyService : IProxyService
                                 {
                                     tokensIn = usage["prompt_tokens"]?.GetValue<int>();
                                     tokensOut = usage["completion_tokens"]?.GetValue<int>();
+
+                                    // Mirror usage into the Anthropic stream state: this loop
+                                    // consumes the usage chunk (skipped or stripped before it is
+                                    // forwarded), so the translator can only learn the token
+                                    // counts through the shared state.
+                                    if (request.StreamingState is AnthropicStreamState anthropicStreamState)
+                                    {
+                                        anthropicStreamState.UsagePromptTokens = tokensIn;
+                                        anthropicStreamState.UsageCompletionTokens = tokensOut;
+                                    }
                                     
                                     if (injectedIncludeUsage)
                                     {
@@ -682,6 +704,15 @@ public class ProxyService : IProxyService
                             var chunkBytes = Encoding.UTF8.GetBytes(line + "\n\n");
                             await request.OnStreamChunkAsync(chunkBytes, ct);
                         }
+                    }
+
+                    // Anthropic path: guarantee a [DONE] sentinel so the translator
+                    // flushes its deferred terminal events even if the upstream closed
+                    // the stream without one. Finalize is idempotent, so a duplicate
+                    // sentinel is harmless.
+                    if (request.StreamingState != null && request.OnStreamChunkAsync != null)
+                    {
+                        await request.OnStreamChunkAsync(Encoding.UTF8.GetBytes("data: [DONE]\n\n"), ct);
                     }
                     sw.Stop();
                 }

@@ -85,5 +85,91 @@ namespace MiniRouter.Tests
                 s => s.GetNextProviderAsync("gpt-4o", It.IsAny<HashSet<string>?>()),
                 Times.AtLeastOnce);
         }
+
+        // ── /v1/messages non-stream (issue #18: content-type + raw fallback) ──
+
+        private sealed class FixedResponseHandler : HttpMessageHandler
+        {
+            private readonly HttpResponseMessage _response;
+
+            public FixedResponseHandler(HttpStatusCode status, string body, string contentType = "application/json")
+            {
+                _response = new HttpResponseMessage(status)
+                {
+                    Content = new StringContent(body, Encoding.UTF8, contentType)
+                };
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request, CancellationToken cancellationToken) => Task.FromResult(_response);
+        }
+
+        private ProxyService BuildAnthropicService(string upstreamBody, string upstreamContentType = "application/json")
+        {
+            var handler = new FixedResponseHandler(HttpStatusCode.OK, upstreamBody, upstreamContentType);
+            _httpClientFactoryMock.Setup(f => f.CreateClient("upstream")).Returns(new HttpClient(handler));
+            _providerServiceMock
+                .Setup(p => p.GetNextProviderAsync(It.IsAny<string?>(), It.IsAny<HashSet<string>?>()))
+                .ReturnsAsync(new Provider("p1", "P1", "http://fake.local", "key", true, null, null, null, null, null, null, null));
+            _logServiceMock.Setup(l => l.LogRequestAsync(It.IsAny<RequestLog>())).Returns(Task.CompletedTask);
+
+            return new ProxyService(
+                _providerServiceMock.Object,
+                _httpClientFactoryMock.Object,
+                _logServiceMock.Object,
+                _chainServiceMock.Object
+            );
+        }
+
+        private static DefaultHttpContext AnthropicContext(string requestBody)
+        {
+            var context = new DefaultHttpContext();
+            context.Items["ApiKeyId"] = "key1";
+            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody));
+            context.Response.Body = new MemoryStream();
+            return context;
+        }
+
+        private static string ReadBody(DefaultHttpContext context)
+        {
+            context.Response.Body.Position = 0;
+            return new StreamReader(context.Response.Body).ReadToEnd();
+        }
+
+        [Fact]
+        public async Task HandleAnthropicMessagesAsync_NonStream_SetsApplicationJsonContentType()
+        {
+            var service = BuildAnthropicService(
+                "{\"id\":\"chatcmpl-1\",\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"ok\"}}],\"usage\":{\"prompt_tokens\":1,\"completion_tokens\":1}}");
+
+            var context = AnthropicContext(
+                "{\"model\":\"gpt-test\",\"max_tokens\":32,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}");
+
+            await service.HandleAnthropicMessagesAsync(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal("application/json", context.Response.ContentType);
+
+            using var doc = JsonDocument.Parse(ReadBody(context));
+            Assert.Equal("message", doc.RootElement.GetProperty("type").GetString());
+            Assert.Equal("1", doc.RootElement.GetProperty("id").GetString());
+        }
+
+        [Fact]
+        public async Task HandleAnthropicMessagesAsync_MalformedUpstreamBody_PassesThroughRaw()
+        {
+            // A 200 with a non-JSON body (HTML block page, truncated body) must fall
+            // through to raw passthrough, not throw an unhandled JsonException.
+            var html = "<html>blocked by proxy</html>";
+            var service = BuildAnthropicService(html, "text/html");
+
+            var context = AnthropicContext(
+                "{\"model\":\"gpt-test\",\"max_tokens\":32,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}");
+
+            await service.HandleAnthropicMessagesAsync(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Equal(html, ReadBody(context));
+        }
     }
 }
